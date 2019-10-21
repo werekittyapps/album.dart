@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -24,6 +26,9 @@ class PhotosBodyState extends State<PhotosBody> {
   var photosData = [];
   var jsonPhoto = [];
   var drawIndex = 0;
+
+  bool isConnected = false;
+  bool connectionChecked = false;
 
   String errorMessage = "";
   bool checkError = false;
@@ -74,6 +79,42 @@ class PhotosBodyState extends State<PhotosBody> {
   //  );
   //}
 
+  checkInternet() async{
+    print('here');
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.mobile) {
+      // I am connected to a mobile network.
+      print("mobile");
+      isConnected = true;
+      connectionChecked = true;
+    } else if (connectivityResult == ConnectivityResult.wifi) {
+      // I am connected to a wifi network.
+      print("wifi");
+      isConnected = true;
+      connectionChecked = true;
+    }else {
+      print("no");
+      isConnected = false;
+      connectionChecked = true;
+    }
+//    try {
+//      final result = await InternetAddress.lookup('google.com');
+//      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+//        setState(() {
+//          print('connected');
+//          isConnected = true;
+//          connectionChecked = true;
+//        });
+//      }
+//    } on SocketException catch (_) {
+//      setState(() {
+//        print('not connected');
+//        isConnected = false;
+//        connectionChecked = true;
+//      });
+//    }
+  }
+
   onTapped(){
     if (photosDataFull.length - photosData.length >= 10){
       if(photosDataFull.length >= 10) {
@@ -92,9 +133,30 @@ class PhotosBodyState extends State<PhotosBody> {
     }
   }
 
+  void _showChangeDialog() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Нет подключения'),
+            content: Text(""),
+            actions: <Widget>[FlatButton(
+              onPressed: () {
+                getValues();
+                Navigator.pop(context);
+                },
+              child: Text('Попробовать снова'),
+            )
+            ],
+          );
+        }
+    );
+  }
+
   @override
   void initState() {
     getValues();
+    checkInternet();
     super.initState();
   }
 
@@ -116,6 +178,22 @@ class PhotosBodyState extends State<PhotosBody> {
                         child: Text('Что-то пошло не так'),
                       ))])
 
+        ) : !connectionChecked ? Container(
+            child: Center(child: CircularProgressIndicator(),)
+        ) : !isConnected ? Container(
+            child: AlertDialog(
+              title: Text('Нет подключения'),
+              content: Text(""),
+              actions: <Widget>[
+                FlatButton(
+                  onPressed: () {
+                    getValues();
+                    Navigator.pop(context);
+                  },
+                  child: Text('Попробовать снова'),
+                )
+              ],
+            )
         ) :
           Column (
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
