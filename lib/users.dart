@@ -16,6 +16,10 @@ class MyBodyState extends State<MyBody> {
   List _array = [];
   var data = [];
 
+  String errorMessage = "";
+  bool checkError = false;
+
+
   final myController = TextEditingController();
 
   getData() async{
@@ -33,8 +37,30 @@ class MyBodyState extends State<MyBody> {
           _array = data;
         });
       }
+      if(response.statusCode == 404) {
+        setState(() {
+          checkError = true;
+          errorMessage = "Ресурс был удален";
+        });
+      }
+      if(response.statusCode == 500) {
+        setState(() {
+          checkError = true;
+          errorMessage = "Internal Server Error: ошибка соединения с сервером";
+        });
+      }
+      if(response.statusCode == 503) {
+        setState(() {
+          checkError = true;
+          errorMessage = "Сервер недоступен";
+        });
+      }
     } catch (e) {
       print(e);
+      setState(() {
+        checkError = true;
+        errorMessage = "Internal Server Error: проверьте подключение";
+      });
     }
 
     // Запрос альбомов
@@ -166,9 +192,25 @@ class MyBodyState extends State<MyBody> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Expanded (
+              // Если ошибка покажет алерт диалог
                 child: Container (
                   padding: EdgeInsets.only(top: 10),
-                  child: ListView.builder(
+                  child: checkError? Container(
+                    child: AlertDialog(
+                            title: Text('$errorMessage'),
+                            content: Text(""),
+                            actions: <Widget>[
+                              FlatButton(
+                                onPressed: () {
+                                  checkError = false;
+                                  getCached();
+                                },
+                                child: Text('Попробовать снова'),
+                              )
+                            ],
+                          )
+                    )
+                    : ListView.builder(
                       itemCount: _array.length,
                       itemBuilder: (context, i){
                         return new ListTile(

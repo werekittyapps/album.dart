@@ -38,6 +38,7 @@ class AlbumsBodyState extends State<AlbumsBody> {
       dataIsEmpty = true
     });
     if (!dataIsEmpty){
+      albumsData.clear();
       jsonAlbum = json.decode(cachedJSON);
       for(var i = 0; i < jsonAlbum.length; i++) {
         if(jsonAlbum[i]["userId"].toString() == userId.toString()){
@@ -70,7 +71,7 @@ class AlbumsBodyState extends State<AlbumsBody> {
                   }
                 }
                 setState(() {
-                _filteredArrayOfAlbums = tempList;
+                  _filteredArrayOfAlbums = tempList;
                 });
             }
           );
@@ -153,13 +154,25 @@ class AlbumsBodyState extends State<AlbumsBody> {
             ),
           ],),
         body:  Container (
-            child:
+            child:_filteredArrayOfAlbums.length == 0 ? Container(
+              padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+              child: Row(
+                  children:[
+                    Expanded(
+                        child: Container(
+                          color: Colors.white,
+                          padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                          child: Text('Нет данных'),
+                        ))])
+              
+            ) :
             Column (
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Expanded (
                     child: Container (
                       padding: EdgeInsets.only(top: 10),
+                      // Если результаты поиска пустые говорим об этом, иначе строим список
                       child: ListView.builder(
                           //itemCount: _arrayOfAlbums.length,
                           itemCount: _arrayOfAlbums == null ? 0 : _filteredArrayOfAlbums.length,
