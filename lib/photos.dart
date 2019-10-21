@@ -3,20 +3,22 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PhotosBody extends StatefulWidget {
   final String albumId;
-  PhotosBody({this.albumId});
+  final bool photoError;
+  PhotosBody({this.albumId, this.photoError});
 
   @override
-  createState() => new PhotosBodyState(albumId);
+  createState() => new PhotosBodyState(albumId, photoError);
 }
 
 class PhotosBodyState extends State<PhotosBody> {
   final String albumId;
-  PhotosBodyState(this.albumId);
+  final bool photoError;
+  PhotosBodyState(this.albumId, this.photoError);
+
   List _arrayOfPhotos = [];
   var photosDataFull = [];
   var photosData = [];
@@ -25,49 +27,6 @@ class PhotosBodyState extends State<PhotosBody> {
 
   String errorMessage = "";
   bool checkError = false;
-
-  getPhotosData() async{
-
-    try {
-      Response response = await Dio().get("https://jsonplaceholder.typicode.com/photos?albumId=" + "$albumId");
-      debugPrint("response ${response.statusCode}");
-      if(response.statusCode == 200) {
-        photosDataFull = response.data;
-        if(photosDataFull.length >= 10) {
-          for (var i = 0; i <= 9; i++) {
-            photosData.add(photosDataFull[i]);
-          }
-        }
-        setState(() {
-          _arrayOfPhotos = photosData;
-        });
-      }
-      if(response.statusCode == 404) {
-        setState(() {
-          checkError = true;
-          errorMessage = "Ресурс был удален";
-        });
-      }
-      if(response.statusCode == 500) {
-        setState(() {
-          checkError = true;
-          errorMessage = "Internal Server Error: ошибка соединения с сервером";
-        });
-      }
-      if(response.statusCode == 503) {
-        setState(() {
-          checkError = true;
-          errorMessage = "Сервер недоступен";
-        });
-      }
-    } catch (e) {
-      print(e);
-      setState(() {
-        checkError = true;
-        errorMessage = "Internal Server Error: проверьте подключение";
-      });
-    }
-  }
 
   getValues() async{
     var dataIsEmpty = false;
@@ -95,6 +54,26 @@ class PhotosBodyState extends State<PhotosBody> {
     }
   }
 
+  //void _showErrorDialog() {
+  //  showDialog(
+  //      context: context,
+  //      builder: (context) {
+  //        return AlertDialog(
+  //          title: Text('$errorMessage'),
+  //          content: Text(""),
+  //          actions: <Widget>[
+  //            FlatButton(
+  //              onPressed: () {
+  //                getValues();
+  //              },
+  //              child: Text('Попробовать снова'),
+  //            )
+  //          ],
+  //        );
+  //      }
+  //  );
+  //}
+
   onTapped(){
     if (photosDataFull.length - photosData.length >= 10){
       if(photosDataFull.length >= 10) {
@@ -115,7 +94,6 @@ class PhotosBodyState extends State<PhotosBody> {
 
   @override
   void initState() {
-    //getPhotosData();
     getValues();
     super.initState();
   }
@@ -127,28 +105,25 @@ class PhotosBodyState extends State<PhotosBody> {
       backgroundColor: Colors.grey[300],
       appBar: new AppBar(title: new Text('Photos')),
       body: Container (
-          child:
+        child:photoError ? Container(
+            padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+            child: Row(
+                children:[
+                  Expanded(
+                      child: Container(
+                        color: Colors.white,
+                        padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                        child: Text('Что-то пошло не так'),
+                      ))])
+
+        ) :
           Column (
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Expanded (
                 child: Container (
                   padding: EdgeInsets.only(top: 10),
-                  child: checkError? Container(
-                      child: AlertDialog(
-                        title: Text('$errorMessage'),
-                        content: Text(""),
-                        actions: <Widget>[
-                          FlatButton(
-                            onPressed: () {
-                              checkError = false;
-                              getPhotosData();
-                            },
-                            child: Text('Попробовать снова'),
-                          )
-                        ],
-                      )
-                  ) : ListView.builder(
+                  child: ListView.builder(
                         itemCount: _arrayOfPhotos.length,
                         itemBuilder: (context, i){
                           return new Container(

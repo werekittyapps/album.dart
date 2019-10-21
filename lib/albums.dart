@@ -7,15 +7,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AlbumsBody extends StatefulWidget {
   final String userId;
-  AlbumsBody({this.userId});
+  final bool albumError;
+  final bool photoError;
+
+  AlbumsBody({this.userId, this.albumError, this.photoError});
 
   @override
-  createState() => new AlbumsBodyState(userId);
+  createState() => new AlbumsBodyState(userId, albumError, photoError);
 }
 
 class AlbumsBodyState extends State<AlbumsBody> {
   final String userId;
-  AlbumsBodyState(this.userId);
+  final bool albumError;
+  final bool photoError;
+
+  AlbumsBodyState(this.userId, this.albumError, this.photoError);
 
   final myController = TextEditingController();
 
@@ -52,6 +58,18 @@ class AlbumsBodyState extends State<AlbumsBody> {
     }
   }
 
+  removeSpaces(String text) {
+    var result = "";
+    var prevChar = "";
+    for (int i = 0; i < text.length; i++) {
+      if(!(prevChar == " " && text[i] == ' ')){
+        result += text[i];
+        prevChar = text[i];
+      }
+    }
+    return result.trim();
+}
+
   searching(){
     setState(() {
         if (this._searchIcon.icon == Icons.search) {
@@ -66,7 +84,8 @@ class AlbumsBodyState extends State<AlbumsBody> {
                 List tempList = new List();
                 _filteredArrayOfAlbums = _arrayOfAlbums;
                 for (int i = 0; i < _filteredArrayOfAlbums.length; i++) {
-                  if (_filteredArrayOfAlbums[i]['title'].toLowerCase().contains(value.replaceAll(" ", "").toLowerCase())) {
+                  //if (_filteredArrayOfAlbums[i]['title'].toLowerCase().contains(value.trim().toLowerCase())) {
+                  if (_filteredArrayOfAlbums[i]['title'].toLowerCase().contains(removeSpaces(value).toLowerCase())) {
                     tempList.add(_filteredArrayOfAlbums[i]);
                   }
                 }
@@ -125,7 +144,8 @@ class AlbumsBodyState extends State<AlbumsBody> {
   }
 
   onTapped(String id){
-    Navigator.push(context, MaterialPageRoute(builder: (context) => PhotosBody( albumId: id,
+    Navigator.push(context, MaterialPageRoute(
+        builder: (context) => PhotosBody( albumId: id, photoError: photoError,
     )));
   }
 
@@ -142,7 +162,6 @@ class AlbumsBodyState extends State<AlbumsBody> {
 
     return Scaffold(
         backgroundColor: Colors.grey[300],
-        //appBar: new AppBar(title: new Text('Albums')),
         appBar: new AppBar(title: _appBarTitle,
           actions: <Widget>[
             // action button
@@ -154,7 +173,18 @@ class AlbumsBodyState extends State<AlbumsBody> {
             ),
           ],),
         body:  Container (
-            child:_filteredArrayOfAlbums.length == 0 ? Container(
+            child:albumError ? Container(
+                padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+                child: Row(
+                    children:[
+                      Expanded(
+                          child: Container(
+                            color: Colors.white,
+                            padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                            child: Text('Что-то пошло не так'),
+                          ))])
+
+            ) : _filteredArrayOfAlbums.length == 0 ? Container(
               padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
               child: Row(
                   children:[
@@ -174,7 +204,6 @@ class AlbumsBodyState extends State<AlbumsBody> {
                       padding: EdgeInsets.only(top: 10),
                       // Если результаты поиска пустые говорим об этом, иначе строим список
                       child: ListView.builder(
-                          //itemCount: _arrayOfAlbums.length,
                           itemCount: _arrayOfAlbums == null ? 0 : _filteredArrayOfAlbums.length,
                           itemBuilder: (context, i){
                             return new ListTile(
@@ -194,7 +223,6 @@ class AlbumsBodyState extends State<AlbumsBody> {
                                                           style: DefaultTextStyle.of(context).style,
                                                           children: <TextSpan>[
                                                             TextSpan(text: 'Title: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                            //TextSpan(text: "${_arrayOfAlbums[i]["title"]}"),
                                                             TextSpan(text: "${_filteredArrayOfAlbums[i]["title"]}"),
                                                           ],
                                                         ),
@@ -207,7 +235,6 @@ class AlbumsBodyState extends State<AlbumsBody> {
                                                           style: DefaultTextStyle.of(context).style,
                                                           children: <TextSpan>[
                                                             TextSpan(text: 'ID: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                            //TextSpan(text: "${_arrayOfAlbums[i]["id"]}"),
                                                             TextSpan(text: "${_filteredArrayOfAlbums[i]["id"]}"),
                                                           ],
                                                         ),

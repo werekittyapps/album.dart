@@ -18,6 +18,8 @@ class MyBodyState extends State<MyBody> {
 
   String errorMessage = "";
   bool checkError = false;
+  bool checkAlbumError = false;
+  bool checkPhotoError = false;
 
 
   final myController = TextEditingController();
@@ -31,10 +33,17 @@ class MyBodyState extends State<MyBody> {
       Response response = await Dio().get("https://jsonplaceholder.typicode.com/users");
       debugPrint("user response ${response.statusCode}");
       if(response.statusCode == 200) {
+        checkError = false;
         data = response.data;
         getDataPrefs.setString('users', json.encode(data));
         setState(() {
           _array = data;
+        });
+      }
+      if(response.statusCode == 400) {
+        setState(() {
+          checkError = true;
+          errorMessage = "Некорректный запрос";
         });
       }
       if(response.statusCode == 404) {
@@ -56,10 +65,10 @@ class MyBodyState extends State<MyBody> {
         });
       }
     } catch (e) {
-      print(e);
+      //print(e);
       setState(() {
         checkError = true;
-        errorMessage = "Internal Server Error: проверьте подключение";
+        errorMessage = "Ошибка запроса: проверьте подключение";
       });
     }
 
@@ -68,28 +77,98 @@ class MyBodyState extends State<MyBody> {
       Response response = await Dio().get("https://jsonplaceholder.typicode.com/albums");
       debugPrint("album response ${response.statusCode}");
       if(response.statusCode == 200) {
+        checkAlbumError = false;
         var albums = response.data;
         getDataPrefs.setString('albums', json.encode(albums));
       }
+      if(response.statusCode == 400) {
+        setState(() {
+          checkError = true;
+          checkAlbumError = true;
+          errorMessage = "Некорректный запрос";
+        });
+      }
+      if(response.statusCode == 404) {
+        setState(() {
+          checkError = true;
+          checkAlbumError = true;
+          errorMessage = "Ресурс был удален";
+        });
+      }
+      if(response.statusCode == 500) {
+        setState(() {
+          checkError = true;
+          checkAlbumError = true;
+          errorMessage = "Internal Server Error: ошибка соединения с сервером";
+        });
+      }
+      if(response.statusCode == 503) {
+        setState(() {
+          checkError = true;
+          checkAlbumError = true;
+          errorMessage = "Сервер недоступен";
+        });
+      }
     } catch (e) {
-      print(e);
+      //print(e);
+      setState(() {
+        checkError = true;
+        checkAlbumError = true;
+        errorMessage = "Ошибка запроса: проверьте подключение";
+      });
     }
     // Запрос фотографий
     try {
       Response response = await Dio().get("https://jsonplaceholder.typicode.com/photos");
       debugPrint("photo response ${response.statusCode}");
       if(response.statusCode == 200) {
+        checkPhotoError = false;
         var photos = response.data;
         getDataPrefs.setString('photos', json.encode(photos));
       }
+      if(response.statusCode == 400) {
+        setState(() {
+          checkError = true;
+          checkPhotoError = true;
+          errorMessage = "Некорректный запрос";
+        });
+      }
+      if(response.statusCode == 404) {
+        setState(() {
+          checkError = true;
+          checkPhotoError = true;
+          errorMessage = "Ресурс был удален";
+        });
+      }
+      if(response.statusCode == 500) {
+        setState(() {
+          checkError = true;
+          checkPhotoError = true;
+          errorMessage = "Internal Server Error: ошибка соединения с сервером";
+        });
+      }
+      if(response.statusCode == 503) {
+        setState(() {
+          checkError = true;
+          checkPhotoError = true;
+          errorMessage = "Сервер недоступен";
+        });
+      }
     } catch (e) {
-      print(e);
+      //print(e);
+      setState(() {
+        checkError = true;
+        checkPhotoError = true;
+        errorMessage = "Ошибка запроса: проверьте подключение";
+      });
     }
 
   }
 
   onTapped(String id) {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => AlbumsBody( userId: id,
+    Navigator.push(context, MaterialPageRoute(
+        builder: (context) => AlbumsBody( userId: id,
+          albumError: checkAlbumError, photoError: checkPhotoError,
     )));
   }
 
