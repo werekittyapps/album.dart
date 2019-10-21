@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -15,15 +14,15 @@ class MyBody extends StatefulWidget {
 
 class MyBodyState extends State<MyBody> {
   List _array = [];
-  List _alldata = [];
-  List _filteredalldata = [];
+  //List _alldata = [];
+  //List _filteredalldata = [];
   var data = [];
-  var alldata = [];
+  //var alldata = [];
 
-  Icon _searchIcon = new Icon(Icons.search);
-  final TextEditingController _filter = new TextEditingController();
-  String _searchText = "";
-  Widget _appBarTitle = new Text( 'Photographers' );
+  //Icon _searchIcon = new Icon(Icons.search);
+  //final TextEditingController _filter = new TextEditingController();
+  //String _searchText = "";
+  //Widget _appBarTitle = new Text( 'Photographers' );
 
   final myController = TextEditingController();
 
@@ -32,14 +31,14 @@ class MyBodyState extends State<MyBody> {
     SharedPreferences getDataPrefs = await SharedPreferences.getInstance();
 
     // Запрос фотографов
-    var userResponse = await http.get('https://jsonplaceholder.typicode.com/users').then((response) {
+    await http.get('https://jsonplaceholder.typicode.com/users').then((response) {
         debugPrint("user response ${response.statusCode}");
         if(response.statusCode == 200) {
           data = json.decode(response.body.toString());
           getDataPrefs.setString('users', response.body);
           setState(() {
             _array = data;
-            _alldata = data;
+            //_alldata = data;
           });
         }
       }).catchError((error){
@@ -47,27 +46,27 @@ class MyBodyState extends State<MyBody> {
       });
 
     // Запрос альбомов
-    var albumResponse = await http.get('https://jsonplaceholder.typicode.com/albums').then((response) {
+    await http.get('https://jsonplaceholder.typicode.com/albums').then((response) {
       debugPrint("album response ${response.statusCode}");
       if(response.statusCode == 200) {
-        alldata.clear();
-        alldata = json.decode(response.body.toString());
+        //alldata.clear();
+        //alldata = json.decode(response.body.toString());
         getDataPrefs.setString('albums', response.body);
-        _alldata.addAll(alldata);
+        //_alldata.addAll(alldata);
       }
     }).catchError((error){
       print("Error: $error");
     });
 
     // Запрос фотографий
-    var photoResponse = await http.get('https://jsonplaceholder.typicode.com/photos').then((response) {
+    await http.get('https://jsonplaceholder.typicode.com/photos').then((response) {
       debugPrint("photo response ${response.statusCode}");
       if(response.statusCode == 200) {
         getDataPrefs.setString('photos', response.body);
-        alldata.clear();
-        alldata = json.decode(response.body.toString());
-        _alldata.addAll(alldata);
-        setState(() {});
+        //alldata.clear();
+        //alldata = json.decode(response.body.toString());
+        //_alldata.addAll(alldata);
+        //setState(() {});
       }
     }).catchError((error){
       print("Error: $error");
@@ -93,22 +92,21 @@ class MyBodyState extends State<MyBody> {
         data = json.decode(cachedJSON);
         setState(() {
           _array = data;
-          _alldata = data;
+          //_alldata = data;
         });
-        var cachedJSONalbum = (prefs.getString('albums'));
-        alldata = json.decode(cachedJSON);
-        _alldata.addAll(alldata);
-        var cachedJSONphotos = (prefs.getString('photos'));
-        alldata = json.decode(cachedJSON);
-        _alldata.addAll(alldata);
-        setState(() {});
+        //var cachedJSONalbum = (prefs.getString('albums'));
+        //alldata = json.decode(cachedJSON);
+        //_alldata.addAll(alldata);
+        //var cachedJSONphotos = (prefs.getString('photos'));
+        //alldata = json.decode(cachedJSON);
+        //_alldata.addAll(alldata);
+        //setState(() {});
       }
   }
 
   onChangeName(int index, String newName) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     data[index]["name"] = newName;
-    //_array[index]["name"] = newName;
     prefs.setString('users', data.toString());
     getCached();
     print('data: $data');
@@ -160,54 +158,54 @@ class MyBodyState extends State<MyBody> {
     getCached();
   }
 
-  searching(){
-    setState(() {
-      if (this._searchIcon.icon == Icons.search) {
-        this._searchIcon = new Icon(Icons.close);
-        this._appBarTitle = new TextField(
-            controller: _filter,
-            decoration: new InputDecoration(
-              prefixIcon: new Icon(Icons.search),
-              hintText: 'Search...',
-            ),
-            onChanged: (value){
-              List tempList = new List();
-              _filteredalldata = _alldata;
-              for (int i = 0; i < _filteredalldata.length; i++) {
-                if (_filteredalldata[i]['name'].toLowerCase().contains(value.replaceAll(" ", "").toLowerCase()) ||
-                    _filteredalldata[i]['title'].toLowerCase().contains(value.replaceAll(" ", "").toLowerCase()) ) {
-                  tempList.add(_filteredalldata[i]);
-                }
-              }
-              setState(() {
-                _filteredalldata = tempList;
-              });
-            }
-        );
-      } else {
-        this._searchIcon = new Icon(Icons.search);
-        this._appBarTitle = new Text('Albums');
-        _filteredalldata = _array;
-        _filter.clear();
-      }
-    });
+  //searching(){
+  //  setState(() {
+  //    if (this._searchIcon.icon == Icons.search) {
+  //      this._searchIcon = new Icon(Icons.close);
+  //      this._appBarTitle = new TextField(
+  //          controller: _filter,
+  //          decoration: new InputDecoration(
+  //            prefixIcon: new Icon(Icons.search),
+  //            hintText: 'Search...',
+  //          ),
+  //          onChanged: (value){
+  //            List tempList = new List();
+  //            _filteredalldata = _alldata;
+  //            for (int i = 0; i < _filteredalldata.length; i++) {
+  //              if (_filteredalldata[i]['name'].toLowerCase().contains(value.replaceAll(" ", "").toLowerCase()) ||
+  //                  _filteredalldata[i]['title'].toLowerCase().contains(value.replaceAll(" ", "").toLowerCase()) ) {
+  //                tempList.add(_filteredalldata[i]);
+  //              }
+  //            }
+  //            setState(() {
+  //              _filteredalldata = tempList;
+  //            });
+  //          }
+  //      );
+  //    } else {
+  //      this._searchIcon = new Icon(Icons.search);
+  //      this._appBarTitle = new Text('Albums');
+  //      _filteredalldata = _array;
+  //      _filter.clear();
+  //    }
+  //  });
+//
+  //}
 
-  }
-
-  ExamplePageState() {
-    _filter.addListener(() {
-      if (_filter.text.isEmpty) {
-        setState(() {
-          _searchText = "";
-          _filteredalldata = _alldata;
-        });
-      } else {
-        setState(() {
-          _searchText = _filter.text;
-        });
-      }
-    });
-  }
+  //ExamplePageState() {
+  //  _filter.addListener(() {
+  //    if (_filter.text.isEmpty) {
+  //      setState(() {
+  //        _searchText = "";
+  //        _filteredalldata = _alldata;
+  //      });
+  //    } else {
+  //      setState(() {
+  //        _searchText = _filter.text;
+  //      });
+  //    }
+  //  });
+  //}
 
 
   @override
@@ -297,7 +295,10 @@ class MyBodyState extends State<MyBody> {
                                 ]
                             )),
                           onTap: () =>  onTapped("${_array[i]["id"]}"),
-                        onLongPress: () => _showChangeDialog(i),);
+                        onLongPress: () =>  {
+                            myController.text = "${_array[i]["name"]}",
+                            _showChangeDialog(i)
+                        },);
                       }
                   ),
                 )

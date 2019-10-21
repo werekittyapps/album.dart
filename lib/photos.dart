@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,7 +25,7 @@ class PhotosBodyState extends State<PhotosBody> {
 
   getPhotosData() async{
 
-    var response = await http.get('https://jsonplaceholder.typicode.com/photos?albumId='
+    await http.get('https://jsonplaceholder.typicode.com/photos?albumId='
         + "${albumId}").then((response) {
 
       debugPrint("response ${response.statusCode}");

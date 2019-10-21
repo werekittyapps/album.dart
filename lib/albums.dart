@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:album/photos.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -27,7 +26,6 @@ class AlbumsBodyState extends State<AlbumsBody> {
 
   Icon _searchIcon = new Icon(Icons.search);
   final TextEditingController _filter = new TextEditingController();
-  String _searchText = "";
   Widget _appBarTitle = new Text( 'Albums' );
 
   getValues() async{
@@ -65,7 +63,7 @@ class AlbumsBodyState extends State<AlbumsBody> {
                 List tempList = new List();
                 _filteredArrayOfAlbums = _arrayOfAlbums;
                 for (int i = 0; i < _filteredArrayOfAlbums.length; i++) {
-                  if (_filteredArrayOfAlbums[i]['title'].toLowerCase().contains(value.replaceAll(" ", "").toLowerCase())) {
+                  if (_filteredArrayOfAlbums[i]['title'].toLowerCase().contains(value.toLowerCase())) {
                     tempList.add(_filteredArrayOfAlbums[i]);
                   }
                 }
@@ -84,24 +82,9 @@ class AlbumsBodyState extends State<AlbumsBody> {
 
   }
 
-  ExamplePageState() {
-    _filter.addListener(() {
-      if (_filter.text.isEmpty) {
-        setState(() {
-          _searchText = "";
-          _filteredArrayOfAlbums = _arrayOfAlbums;
-        });
-      } else {
-        setState(() {
-          _searchText = _filter.text;
-        });
-      }
-    });
-  }
-
   getAlbumData() async{
-
-    var response = await http.get('https://jsonplaceholder.typicode.com/albums/?userId='
+    
+    await http.get('https://jsonplaceholder.typicode.com/albums/?userId='
         + "${userId}").then((response) {
 
       debugPrint("response ${response.statusCode}");
