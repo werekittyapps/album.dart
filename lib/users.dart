@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,15 +14,7 @@ class MyBody extends StatefulWidget {
 
 class MyBodyState extends State<MyBody> {
   List _array = [];
-  //List _alldata = [];
-  //List _filteredalldata = [];
   var data = [];
-  //var alldata = [];
-
-  //Icon _searchIcon = new Icon(Icons.search);
-  //final TextEditingController _filter = new TextEditingController();
-  //String _searchText = "";
-  //Widget _appBarTitle = new Text( 'Photographers' );
 
   final myController = TextEditingController();
 
@@ -31,46 +23,42 @@ class MyBodyState extends State<MyBody> {
     SharedPreferences getDataPrefs = await SharedPreferences.getInstance();
 
     // Запрос фотографов
-    await http.get('https://jsonplaceholder.typicode.com/users').then((response) {
-        debugPrint("user response ${response.statusCode}");
-        if(response.statusCode == 200) {
-          data = json.decode(response.body.toString());
-          getDataPrefs.setString('users', response.body);
-          setState(() {
-            _array = data;
-            //_alldata = data;
-          });
-        }
-      }).catchError((error){
-        print("Error: $error");
-      });
+    try {
+      Response response = await Dio().get("https://jsonplaceholder.typicode.com/users");
+      debugPrint("user response ${response.statusCode}");
+      if(response.statusCode == 200) {
+        data = response.data;
+        getDataPrefs.setString('users', json.encode(data));
+        setState(() {
+          _array = data;
+        });
+      }
+    } catch (e) {
+      print(e);
+    }
 
     // Запрос альбомов
-    await http.get('https://jsonplaceholder.typicode.com/albums').then((response) {
+    try {
+      Response response = await Dio().get("https://jsonplaceholder.typicode.com/albums");
       debugPrint("album response ${response.statusCode}");
       if(response.statusCode == 200) {
-        //alldata.clear();
-        //alldata = json.decode(response.body.toString());
-        getDataPrefs.setString('albums', response.body);
-        //_alldata.addAll(alldata);
+        var albums = response.data;
+        getDataPrefs.setString('albums', json.encode(albums));
       }
-    }).catchError((error){
-      print("Error: $error");
-    });
-
+    } catch (e) {
+      print(e);
+    }
     // Запрос фотографий
-    await http.get('https://jsonplaceholder.typicode.com/photos').then((response) {
+    try {
+      Response response = await Dio().get("https://jsonplaceholder.typicode.com/photos");
       debugPrint("photo response ${response.statusCode}");
       if(response.statusCode == 200) {
-        getDataPrefs.setString('photos', response.body);
-        //alldata.clear();
-        //alldata = json.decode(response.body.toString());
-        //_alldata.addAll(alldata);
-        //setState(() {});
+        var photos = response.data;
+        getDataPrefs.setString('photos', json.encode(photos));
       }
-    }).catchError((error){
-      print("Error: $error");
-    });
+    } catch (e) {
+      print(e);
+    }
 
   }
 
@@ -92,25 +80,15 @@ class MyBodyState extends State<MyBody> {
         data = json.decode(cachedJSON);
         setState(() {
           _array = data;
-          //_alldata = data;
         });
-        //var cachedJSONalbum = (prefs.getString('albums'));
-        //alldata = json.decode(cachedJSON);
-        //_alldata.addAll(alldata);
-        //var cachedJSONphotos = (prefs.getString('photos'));
-        //alldata = json.decode(cachedJSON);
-        //_alldata.addAll(alldata);
-        //setState(() {});
       }
   }
 
   onChangeName(int index, String newName) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     data[index]["name"] = newName;
-    prefs.setString('users', data.toString());
+    prefs.setString('users', json.encode(data));
     getCached();
-    print('data: $data');
-    print('cache: ${prefs.getString('users')}');
   }
 
   void _showChangeDialog(int index) {
@@ -157,55 +135,6 @@ class MyBodyState extends State<MyBody> {
     print('deleted');
     getCached();
   }
-
-  //searching(){
-  //  setState(() {
-  //    if (this._searchIcon.icon == Icons.search) {
-  //      this._searchIcon = new Icon(Icons.close);
-  //      this._appBarTitle = new TextField(
-  //          controller: _filter,
-  //          decoration: new InputDecoration(
-  //            prefixIcon: new Icon(Icons.search),
-  //            hintText: 'Search...',
-  //          ),
-  //          onChanged: (value){
-  //            List tempList = new List();
-  //            _filteredalldata = _alldata;
-  //            for (int i = 0; i < _filteredalldata.length; i++) {
-  //              if (_filteredalldata[i]['name'].toLowerCase().contains(value.replaceAll(" ", "").toLowerCase()) ||
-  //                  _filteredalldata[i]['title'].toLowerCase().contains(value.replaceAll(" ", "").toLowerCase()) ) {
-  //                tempList.add(_filteredalldata[i]);
-  //              }
-  //            }
-  //            setState(() {
-  //              _filteredalldata = tempList;
-  //            });
-  //          }
-  //      );
-  //    } else {
-  //      this._searchIcon = new Icon(Icons.search);
-  //      this._appBarTitle = new Text('Albums');
-  //      _filteredalldata = _array;
-  //      _filter.clear();
-  //    }
-  //  });
-//
-  //}
-
-  //ExamplePageState() {
-  //  _filter.addListener(() {
-  //    if (_filter.text.isEmpty) {
-  //      setState(() {
-  //        _searchText = "";
-  //        _filteredalldata = _alldata;
-  //      });
-  //    } else {
-  //      setState(() {
-  //        _searchText = _filter.text;
-  //      });
-  //    }
-  //  });
-  //}
 
 
   @override

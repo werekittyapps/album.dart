@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PhotosBody extends StatefulWidget {
@@ -25,12 +25,11 @@ class PhotosBodyState extends State<PhotosBody> {
 
   getPhotosData() async{
 
-    await http.get('https://jsonplaceholder.typicode.com/photos?albumId='
-        + "${albumId}").then((response) {
-
+    try {
+      Response response = await Dio().get("https://jsonplaceholder.typicode.com/photos?albumId=" + "$albumId");
       debugPrint("response ${response.statusCode}");
       if(response.statusCode == 200) {
-        photosDataFull = json.decode(response.body);
+        photosDataFull = response.data;
         if(photosDataFull.length >= 10) {
           for (var i = 0; i <= 9; i++) {
             photosData.add(photosDataFull[i]);
@@ -40,10 +39,9 @@ class PhotosBodyState extends State<PhotosBody> {
           _arrayOfPhotos = photosData;
         });
       }
-
-    }).catchError((error){
-      print("Error: $error");
-    });
+    } catch (e) {
+      print(e);
+    }
   }
 
   getValues() async{

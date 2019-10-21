@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:album/photos.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AlbumsBody extends StatefulWidget {
@@ -17,6 +16,9 @@ class AlbumsBody extends StatefulWidget {
 class AlbumsBodyState extends State<AlbumsBody> {
   final String userId;
   AlbumsBodyState(this.userId);
+
+  final myController = TextEditingController();
+
   List _arrayOfAlbums = [];
 
   List _filteredArrayOfAlbums = [];
@@ -63,7 +65,7 @@ class AlbumsBodyState extends State<AlbumsBody> {
                 List tempList = new List();
                 _filteredArrayOfAlbums = _arrayOfAlbums;
                 for (int i = 0; i < _filteredArrayOfAlbums.length; i++) {
-                  if (_filteredArrayOfAlbums[i]['title'].toLowerCase().contains(value.toLowerCase())) {
+                  if (_filteredArrayOfAlbums[i]['title'].toLowerCase().contains(value.replaceAll(" ", "").toLowerCase())) {
                     tempList.add(_filteredArrayOfAlbums[i]);
                   }
                 }
@@ -82,22 +84,43 @@ class AlbumsBodyState extends State<AlbumsBody> {
 
   }
 
-  getAlbumData() async{
-    
-    await http.get('https://jsonplaceholder.typicode.com/albums/?userId='
-        + "${userId}").then((response) {
+  onChangeTitle(int index, String newTitle) async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    jsonAlbum[index]["title"] = newTitle;
+    prefs.setString('albums', json.encode(jsonAlbum));
+    getValues();
+  }
 
-      debugPrint("response ${response.statusCode}");
-      if(response.statusCode == 200) {
-        albumsData = json.decode(response.body);
-        setState(() {
-          _arrayOfAlbums = albumsData;
-        });
-      }
-
-    }).catchError((error){
-      print("Error: $error");
-    });
+  void _showChangeDialog(int index) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text('Новое название'),
+            content: TextField(
+              controller: myController,
+            ),
+            actions: <Widget>[
+              FlatButton(
+                onPressed: () {
+                  myController.text = "";
+                  Navigator.pop(context);
+                },
+                child: Text('Close'),
+              ),
+              FlatButton(
+                onPressed: () {
+                  print(myController.text);
+                  onChangeTitle(index, myController.text);
+                  myController.text = "";
+                  Navigator.pop(context);
+                },
+                child: Text('Ok'),
+              )
+            ],
+          );
+        }
+    );
   }
 
   onTapped(String id){
@@ -181,8 +204,11 @@ class AlbumsBodyState extends State<AlbumsBody> {
                                                 ))),
                                       ]
                                   )),
-                              //onTap: () =>  onTapped("${_arrayOfAlbums[i]["id"]}"),);
-                              onTap: () =>  onTapped("${_filteredArrayOfAlbums[i]["id"]}"),);
+                              onTap: () =>  onTapped("${_filteredArrayOfAlbums[i]["id"]}"),
+                              onLongPress: () =>  {
+                                myController.text = "${_filteredArrayOfAlbums[i]["title"]}",
+                                _showChangeDialog(i)
+                              },);
                           }
                       ),
                     )
