@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
@@ -29,6 +28,7 @@ class PhotosBodyState extends State<PhotosBody> {
 
   bool isConnected = false;
   bool connectionChecked = false;
+  bool continueOffline = true;
 
   String errorMessage = "";
   bool checkError = false;
@@ -59,98 +59,45 @@ class PhotosBodyState extends State<PhotosBody> {
     }
   }
 
-  //void _showErrorDialog() {
-  //  showDialog(
-  //      context: context,
-  //      builder: (context) {
-  //        return AlertDialog(
-  //          title: Text('$errorMessage'),
-  //          content: Text(""),
-  //          actions: <Widget>[
-  //            FlatButton(
-  //              onPressed: () {
-  //                getValues();
-  //              },
-  //              child: Text('Попробовать снова'),
-  //            )
-  //          ],
-  //        );
-  //      }
-  //  );
-  //}
-
   checkInternet() async{
     print('here');
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.mobile) {
       // I am connected to a mobile network.
       print("mobile");
-      isConnected = true;
-      connectionChecked = true;
+      setState(() {
+        isConnected = true;
+        connectionChecked = true;
+      });
     } else if (connectivityResult == ConnectivityResult.wifi) {
       // I am connected to a wifi network.
       print("wifi");
-      isConnected = true;
-      connectionChecked = true;
+      setState(() {
+        isConnected = true;
+        connectionChecked = true;
+      });
     }else {
       print("no");
-      isConnected = false;
-      connectionChecked = true;
+      setState(() {
+        isConnected = false;
+        connectionChecked = true;
+      });
     }
-//    try {
-//      final result = await InternetAddress.lookup('google.com');
-//      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-//        setState(() {
-//          print('connected');
-//          isConnected = true;
-//          connectionChecked = true;
-//        });
-//      }
-//    } on SocketException catch (_) {
-//      setState(() {
-//        print('not connected');
-//        isConnected = false;
-//        connectionChecked = true;
-//      });
-//    }
   }
 
   onTapped(){
     if (photosDataFull.length - photosData.length >= 10){
       if(photosDataFull.length >= 10) {
         drawIndex++;
-        //for (var i = 0; i <= 9; i++) {
         for (var i = drawIndex*10; i <= drawIndex*10 + 9; i++) {
-          //photosData.clear();
           photosData.add(photosDataFull[i]);
         }
       }
       setState(() {
         print('array: ' + '${_arrayOfPhotos.length}');
-        //drawIndex++;
         _arrayOfPhotos = photosData;
       });
     }
-  }
-
-  void _showChangeDialog() {
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text('Нет подключения'),
-            content: Text(""),
-            actions: <Widget>[FlatButton(
-              onPressed: () {
-                getValues();
-                Navigator.pop(context);
-                },
-              child: Text('Попробовать снова'),
-            )
-            ],
-          );
-        }
-    );
   }
 
   @override
@@ -167,41 +114,28 @@ class PhotosBodyState extends State<PhotosBody> {
       backgroundColor: Colors.grey[300],
       appBar: new AppBar(title: new Text('Photos')),
       body: Container (
-        child:photoError ? Container(
-            padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
-            child: Row(
-                children:[
-                  Expanded(
-                      child: Container(
-                        color: Colors.white,
-                        padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-                        child: Text('Что-то пошло не так'),
-                      ))])
-
-        ) : !connectionChecked ? Container(
-            child: Center(child: CircularProgressIndicator(),)
-        ) : !isConnected ? Container(
-            child: AlertDialog(
-              title: Text('Нет подключения'),
-              content: Text(""),
-              actions: <Widget>[
-                FlatButton(
-                  onPressed: () {
-                    getValues();
-                    Navigator.pop(context);
-                  },
-                  child: Text('Попробовать снова'),
-                )
-              ],
+        child:photoError ?
+        AlertDialog(
+          title: Text('Что-то пошло не так'),
+          content: Text(""),
+          actions: <Widget>[
+            FlatButton(
+              onPressed: () {
+                setState(() {
+                  Navigator.pop(context);
+                });
+                },
+              child: Text('Назад'),
             )
+          ],
         ) :
           Column (
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Expanded (
-                child: Container (
-                  padding: EdgeInsets.only(top: 10),
-                  child: ListView.builder(
+                  child: Container (
+                    padding: EdgeInsets.only(top: 10),
+                    child: ListView.builder(
                         itemCount: _arrayOfPhotos.length,
                         itemBuilder: (context, i){
                           return new Container(
@@ -209,21 +143,25 @@ class PhotosBodyState extends State<PhotosBody> {
                               child: Column(
                                   children:[
                                     Container (
-                                      color: Colors.white,
+                                        color: Colors.white,
                                         child: Row (
                                             children: [
                                               Container (
                                                 width: 120.0,
                                                 height: 120.0,
                                                 padding: EdgeInsets.all(10),
-                                                child: CachedNetworkImage(
+                                                child: !isConnected ? Image.asset(
+                                                  'assets/images/placeholder.png',
+                                                  width: 100.0, height: 100.0, fit: BoxFit.cover,
+                                                )
+                                                    : CachedNetworkImage(
                                                   imageUrl: "${_arrayOfPhotos[i]["url"]}",
-                                                    width: 100.0, height: 100.0, fit: BoxFit.cover,
+                                                  width: 100.0, height: 100.0, fit: BoxFit.cover,
                                                   placeholder: (context, url) => CircularProgressIndicator(),
                                                   errorWidget: (context, url, error) => Icon(Icons.error),
                                                 ),
                                               ),
-                                                 Expanded(child: Column (
+                                              Expanded(child: Column (
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
                                                   Container (
@@ -251,7 +189,7 @@ class PhotosBodyState extends State<PhotosBody> {
                                                     ),
                                                   )
                                                 ],
-                              ))
+                                              ))
                                             ]
                                         )
                                     ),
@@ -261,16 +199,16 @@ class PhotosBodyState extends State<PhotosBody> {
                                           child:RaisedButton(
                                               color: Colors.white,
                                               onPressed: (){
-                                            onTapped();
-                                            }, child: Text('Еще'))),
+                                                onTapped();
+                                              }, child: Text('Еще'))),
                                   ]
                               ));
                         }
                     ),
-                )
+                  )
               ),
             ],
-          )
+          ),
       ),
     );
   }
