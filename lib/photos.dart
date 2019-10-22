@@ -27,7 +27,7 @@ class PhotosBodyState extends State<PhotosBody> {
   var drawIndex = 0;
 
   bool isConnected = false;
-  bool connectionChecked = false;
+  //bool connectionChecked = false;
   bool continueOffline = true;
 
   String errorMessage = "";
@@ -67,20 +67,20 @@ class PhotosBodyState extends State<PhotosBody> {
       print("mobile");
       setState(() {
         isConnected = true;
-        connectionChecked = true;
+        //connectionChecked = true;
       });
     } else if (connectivityResult == ConnectivityResult.wifi) {
       // I am connected to a wifi network.
       print("wifi");
       setState(() {
         isConnected = true;
-        connectionChecked = true;
+        //connectionChecked = true;
       });
     }else {
       print("no");
       setState(() {
         isConnected = false;
-        connectionChecked = true;
+        //connectionChecked = true;
       });
     }
   }

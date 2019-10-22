@@ -20,8 +20,6 @@ class MyBodyState extends State<MyBody> {
   List _arrayOfPhotos = [];
 
   List _filteredArray = [];
-  //List _filteredArrayOfAlbums = [];
-  //List _filteredArrayOfPhotos = [];
 
   var data = [];
 
@@ -39,8 +37,12 @@ class MyBodyState extends State<MyBody> {
   var categoryFlag = "users";
   var searchFlag = false;
   bool isConnected = false;
+  bool isLoading = false;
 
   getData() async{
+    setState(() {
+      isLoading = true;
+    });
     print('in getData()');
     SharedPreferences getDataPrefs = await SharedPreferences.getInstance();
 
@@ -54,6 +56,7 @@ class MyBodyState extends State<MyBody> {
         getDataPrefs.setString('users', json.encode(data));
         setState(() {
           _arrayOfUsers = data;
+          if (categoryFlag == "users") _filteredArray = _arrayOfUsers;
         });
       }
       if(response.statusCode == 400) {
@@ -97,6 +100,9 @@ class MyBodyState extends State<MyBody> {
         var albums = response.data;
         getDataPrefs.setString('albums', json.encode(albums));
         _arrayOfAlbums = albums;
+        setState(() {
+          if (categoryFlag == "albums") _filteredArray = _arrayOfAlbums;
+        });
       }
       if(response.statusCode == 400) {
         setState(() {
@@ -143,12 +149,19 @@ class MyBodyState extends State<MyBody> {
         var photos = response.data;
         getDataPrefs.setString('photos', json.encode(photos));
         _arrayOfPhotos = photos;
+        setState(() {
+          if (categoryFlag == "photos") _filteredArray = _arrayOfPhotos;
+          isLoading = false;
+        });
       }
       if(response.statusCode == 400) {
         setState(() {
           checkError = true;
           checkPhotoError = true;
           errorMessage = "Некорректный запрос";
+          setState(() {
+            isLoading = false;
+          });
         });
       }
       if(response.statusCode == 404) {
@@ -156,6 +169,9 @@ class MyBodyState extends State<MyBody> {
           checkError = true;
           checkPhotoError = true;
           errorMessage = "Ресурс был удален";
+          setState(() {
+            isLoading = false;
+          });
         });
       }
       if(response.statusCode == 500) {
@@ -163,6 +179,9 @@ class MyBodyState extends State<MyBody> {
           checkError = true;
           checkPhotoError = true;
           errorMessage = "Internal Server Error: ошибка соединения с сервером";
+          setState(() {
+            isLoading = false;
+          });
         });
       }
       if(response.statusCode == 503) {
@@ -170,6 +189,9 @@ class MyBodyState extends State<MyBody> {
           checkError = true;
           checkPhotoError = true;
           errorMessage = "Сервер недоступен";
+          setState(() {
+            isLoading = false;
+          });
         });
       }
     } catch (e) {
@@ -178,6 +200,9 @@ class MyBodyState extends State<MyBody> {
         checkError = true;
         checkPhotoError = true;
         errorMessage = "Ошибка запроса: проверьте подключение";
+        setState(() {
+          isLoading = false;
+        });
       });
     }
 
@@ -210,6 +235,9 @@ class MyBodyState extends State<MyBody> {
           _arrayOfUsers = data;
           _arrayOfAlbums = albumData;
           _arrayOfPhotos = photoData;
+          if (categoryFlag == "users") _filteredArray = _arrayOfUsers;
+          if (categoryFlag == "albums") _filteredArray = _arrayOfAlbums;
+          if (categoryFlag == "photos") _filteredArray = _arrayOfPhotos;
         });
       }
   }
@@ -260,6 +288,8 @@ class MyBodyState extends State<MyBody> {
     setState(() {
       data.clear();
       _arrayOfUsers.clear();
+      _arrayOfAlbums.clear();
+      _arrayOfPhotos.clear();
     });
     print('deleted');
     getCached();
@@ -289,9 +319,9 @@ class MyBodyState extends State<MyBody> {
   }
 
   searching(){
+    getCached();
     setState(() {
       if (this._searchIcon.icon == Icons.search) {
-        // здесь открываем кнопки и смотрим состояния флага под changed
         searchFlag = true;
         if (categoryFlag == "users") _filteredArray = _arrayOfUsers;
         if (categoryFlag == "albums") _filteredArray = _arrayOfAlbums;
@@ -308,13 +338,15 @@ class MyBodyState extends State<MyBody> {
                 if (categoryFlag == "albums") {
                   List tempList = new List();
                   _filteredArray = _arrayOfAlbums;
-                  for (int i = 0; i < _filteredArray.length; i++) {
-                    //if (value.trim().length >= 2){
-                    if (_filteredArray[i]['title'].toLowerCase().contains(
-                        value.trim().toLowerCase())) {
-                      tempList.add(_filteredArray[i]);
+                  if (value.length >= 2) {
+                    for (int i = 0; i < _filteredArray.length; i++) {
+                      if (_filteredArray[i]['title'].toLowerCase().contains(
+                          value.trim().toLowerCase())) {
+                        tempList.add(_filteredArray[i]);
+                      }
                     }
-                    //}
+                  } else {
+                    tempList = _arrayOfAlbums;
                   }
                   setState(() {
                     _filteredArray = tempList;
@@ -323,13 +355,15 @@ class MyBodyState extends State<MyBody> {
                 if (categoryFlag == "photos") {
                   List tempList = new List();
                   _filteredArray = _arrayOfPhotos;
-                  for (int i = 0; i < _filteredArray.length; i++) {
-                    //if (value.trim().length >= 2){
-                    if (_filteredArray[i]['title'].toLowerCase().contains(
-                        value.trim().toLowerCase())) {
-                      tempList.add(_filteredArray[i]);
+                  if (value.length >= 2) {
+                    for (int i = 0; i < _filteredArray.length; i++) {
+                      if (_filteredArray[i]['title'].toLowerCase().contains(
+                          value.trim().toLowerCase())) {
+                        tempList.add(_filteredArray[i]);
+                      }
                     }
-                    //}
+                  } else {
+                    tempList = _arrayOfPhotos;
                   }
                   setState(() {
                     _filteredArray = tempList;
@@ -338,36 +372,20 @@ class MyBodyState extends State<MyBody> {
                 if (categoryFlag == "users") {
                   List tempList = new List();
                   _filteredArray = _arrayOfUsers;
-                  for (int i = 0; i < _filteredArray.length; i++) {
-                    //if (value.trim().length >= 2){
-                    if (_filteredArray[i]['name'].toLowerCase().contains(
-                        value.trim().toLowerCase())) {
-                      tempList.add(_filteredArray[i]);
+                  if (value.length >= 2) {
+                    for (int i = 0; i < _filteredArray.length; i++) {
+                      if (_filteredArray[i]['name'].toLowerCase().contains(
+                          value.trim().toLowerCase())) {
+                        tempList.add(_filteredArray[i]);
+                      }
                     }
-                    //}
+                  } else {
+                    tempList = _arrayOfUsers;
                   }
                   setState(() {
                     _filteredArray = tempList;
-                    print(_filteredArray);
-                    print(tempList);
                   });
                 }
-                //if (categoryFlag == "users") {
-                //  List tempList = new List();
-                //  _filteredArray = _arrayOfUsers;
-                //  for (int i = 0; i < _filteredArray.length; i++) {
-                //    //if (value.trim().length >= 2){
-                //    if (_filteredArray[i]['name'].toLowerCase().contains(
-                //        value.trim().toLowerCase())) {
-                //      tempList.add(_filteredArray[i]);
-                //    }
-                //    //}
-                //  }
-                //  setState(() {
-                //    _filteredArray = tempList;
-                //  }
-                //  );
-                //}
               //}
             }
         );
@@ -441,6 +459,7 @@ class MyBodyState extends State<MyBody> {
                 onPressed: (){
                   setState(() {
                     categoryFlag = "photos";
+                    checkInternet();
                     _filteredArray = _arrayOfPhotos;
                   });
                 }, child: Text('Фотографии')),
@@ -449,13 +468,14 @@ class MyBodyState extends State<MyBody> {
             ),
             Expanded (
                 child: Container (
-                  //padding: EdgeInsets.only(top: 10),
                   child: categoryFlag == "albums" ?
 
 
                       Container (
                         alignment: Alignment(0.0, -1.0),
-                      child: checkAlbumError ? Container(
+                      child: isLoading ? CircularProgressIndicator()
+                          :
+                      checkAlbumError ? Container(
                           padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
                           child: Row(
                               children:[
@@ -527,7 +547,9 @@ class MyBodyState extends State<MyBody> {
                       : categoryFlag == "photos" ?
                   Container (
                       alignment: Alignment(0.0, -1.0),
-                      child: _filteredArray.length == 0 ? Container(
+                      child: isLoading ? CircularProgressIndicator()
+                          :
+                      _filteredArray.length == 0 ? Container(
                           padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
                           child: Row(
                               children:[
@@ -603,8 +625,10 @@ class MyBodyState extends State<MyBody> {
 
 
                       : Container (
-                    child: _filteredArray.length == 0 ? Container(
-                        alignment: Alignment(0.0, -1.0),
+                    alignment: Alignment(0.0, -1.0),
+                    child: isLoading ? CircularProgressIndicator()
+                        :
+                    _filteredArray.length == 0 ? Container(
                         padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
                         child: Row(
                             children:[
@@ -681,6 +705,11 @@ class MyBodyState extends State<MyBody> {
           ],
         )
             :
+        isLoading ? Container(
+          alignment: Alignment(0.0, 0.0),
+          child: CircularProgressIndicator(),
+        )
+            :
         Column (
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -713,7 +742,8 @@ class MyBodyState extends State<MyBody> {
                                 children:[
                                   Expanded(
                                       child: Container(
-                                          child: Container(
+                                          child:
+                                          Container(
                                               child: Column (
                                                 crossAxisAlignment: CrossAxisAlignment.start,
                                                 children: [
