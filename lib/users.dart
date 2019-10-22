@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -13,7 +15,14 @@ class MyBody extends StatefulWidget {
 }
 
 class MyBodyState extends State<MyBody> {
-  List _array = [];
+  List _arrayOfUsers = [];
+  List _arrayOfAlbums = [];
+  List _arrayOfPhotos = [];
+
+  List _filteredArray = [];
+  //List _filteredArrayOfAlbums = [];
+  //List _filteredArrayOfPhotos = [];
+
   var data = [];
 
   String errorMessage = "";
@@ -21,8 +30,15 @@ class MyBodyState extends State<MyBody> {
   bool checkAlbumError = false;
   bool checkPhotoError = false;
 
-
   final myController = TextEditingController();
+
+  Icon _searchIcon = new Icon(Icons.search);
+  final TextEditingController _filter = new TextEditingController();
+  Widget _appBarTitle = new Text( 'Photographers' );
+
+  var categoryFlag = "users";
+  var searchFlag = false;
+  bool isConnected = false;
 
   getData() async{
     print('in getData()');
@@ -37,7 +53,7 @@ class MyBodyState extends State<MyBody> {
         data = response.data;
         getDataPrefs.setString('users', json.encode(data));
         setState(() {
-          _array = data;
+          _arrayOfUsers = data;
         });
       }
       if(response.statusCode == 400) {
@@ -80,6 +96,7 @@ class MyBodyState extends State<MyBody> {
         checkAlbumError = false;
         var albums = response.data;
         getDataPrefs.setString('albums', json.encode(albums));
+        _arrayOfAlbums = albums;
       }
       if(response.statusCode == 400) {
         setState(() {
@@ -125,6 +142,7 @@ class MyBodyState extends State<MyBody> {
         checkPhotoError = false;
         var photos = response.data;
         getDataPrefs.setString('photos', json.encode(photos));
+        _arrayOfPhotos = photos;
       }
       if(response.statusCode == 400) {
         setState(() {
@@ -183,8 +201,15 @@ class MyBodyState extends State<MyBody> {
       if (!inGetData){
         print('in getCach()');
         data = json.decode(cachedJSON);
-        setState(() {
-          _array = data;
+
+        var cachedAlbumJSON = (prefs.getString('albums'));
+        var albumData = json.decode(cachedAlbumJSON);
+        var cachedPhotoJSON = (prefs.getString('photos'));
+        var photoData = json.decode(cachedPhotoJSON);
+            setState(() {
+          _arrayOfUsers = data;
+          _arrayOfAlbums = albumData;
+          _arrayOfPhotos = photoData;
         });
       }
   }
@@ -228,22 +253,138 @@ class MyBodyState extends State<MyBody> {
     );
   }
 
-
   deleteCache() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.clear();
     DefaultCacheManager().emptyCache();
     setState(() {
       data.clear();
-      _array.clear();
+      _arrayOfUsers.clear();
     });
     print('deleted');
     getCached();
   }
 
+  checkInternet() async{
+    print('here');
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.mobile) {
+      // I am connected to a mobile network.
+      print("mobile");
+      setState(() {
+        isConnected = true;
+      });
+    } else if (connectivityResult == ConnectivityResult.wifi) {
+      // I am connected to a wifi network.
+      print("wifi");
+      setState(() {
+        isConnected = true;
+      });
+    }else {
+      print("no");
+      setState(() {
+        isConnected = false;
+      });
+    }
+  }
+
+  searching(){
+    setState(() {
+      if (this._searchIcon.icon == Icons.search) {
+        // здесь открываем кнопки и смотрим состояния флага под changed
+        searchFlag = true;
+        if (categoryFlag == "users") _filteredArray = _arrayOfUsers;
+        if (categoryFlag == "albums") _filteredArray = _arrayOfAlbums;
+        if (categoryFlag == "photos") _filteredArray = _arrayOfPhotos;
+        this._searchIcon = new Icon(Icons.close);
+        this._appBarTitle = new TextField(
+            controller: _filter,
+            decoration: new InputDecoration(
+              prefixIcon: new Icon(Icons.search),
+              hintText: 'Search...',
+            ),
+            onChanged: (value) {
+              //if (value.length >= 2) {
+                if (categoryFlag == "albums") {
+                  List tempList = new List();
+                  _filteredArray = _arrayOfAlbums;
+                  for (int i = 0; i < _filteredArray.length; i++) {
+                    //if (value.trim().length >= 2){
+                    if (_filteredArray[i]['title'].toLowerCase().contains(
+                        value.trim().toLowerCase())) {
+                      tempList.add(_filteredArray[i]);
+                    }
+                    //}
+                  }
+                  setState(() {
+                    _filteredArray = tempList;
+                  });
+                }
+                if (categoryFlag == "photos") {
+                  List tempList = new List();
+                  _filteredArray = _arrayOfPhotos;
+                  for (int i = 0; i < _filteredArray.length; i++) {
+                    //if (value.trim().length >= 2){
+                    if (_filteredArray[i]['title'].toLowerCase().contains(
+                        value.trim().toLowerCase())) {
+                      tempList.add(_filteredArray[i]);
+                    }
+                    //}
+                  }
+                  setState(() {
+                    _filteredArray = tempList;
+                  });
+                }
+                if (categoryFlag == "users") {
+                  List tempList = new List();
+                  _filteredArray = _arrayOfUsers;
+                  for (int i = 0; i < _filteredArray.length; i++) {
+                    //if (value.trim().length >= 2){
+                    if (_filteredArray[i]['name'].toLowerCase().contains(
+                        value.trim().toLowerCase())) {
+                      tempList.add(_filteredArray[i]);
+                    }
+                    //}
+                  }
+                  setState(() {
+                    _filteredArray = tempList;
+                    print(_filteredArray);
+                    print(tempList);
+                  });
+                }
+                //if (categoryFlag == "users") {
+                //  List tempList = new List();
+                //  _filteredArray = _arrayOfUsers;
+                //  for (int i = 0; i < _filteredArray.length; i++) {
+                //    //if (value.trim().length >= 2){
+                //    if (_filteredArray[i]['name'].toLowerCase().contains(
+                //        value.trim().toLowerCase())) {
+                //      tempList.add(_filteredArray[i]);
+                //    }
+                //    //}
+                //  }
+                //  setState(() {
+                //    _filteredArray = tempList;
+                //  }
+                //  );
+                //}
+              //}
+            }
+        );
+      } else {
+        this._searchIcon = new Icon(Icons.search);
+        this._appBarTitle = new Text('Photographers');
+        searchFlag = false;
+        _filter.clear();
+      }
+    });
+
+  }
+
 
   @override
   void initState() {
+    checkInternet();
     getCached();
     super.initState();
   }
@@ -255,9 +396,15 @@ class MyBodyState extends State<MyBody> {
     return new Scaffold(
         backgroundColor: Colors.grey[300],
         appBar: new AppBar(
-          title: new Text('Photographers'),
+          title: _appBarTitle,
           actions: <Widget>[
             // action button
+            IconButton(
+              icon: _searchIcon,
+              onPressed: () {
+                searching();
+              },
+            ),
             IconButton(
               icon: Icon(Icons.refresh),
               onPressed: () {
@@ -266,7 +413,274 @@ class MyBodyState extends State<MyBody> {
             ),
           ],),
         body:  Container (
-        child:
+        child: searchFlag ?
+        Column (
+          children: [
+            Container(
+              child: ButtonBar(
+          mainAxisSize: MainAxisSize.min, // this will take space as minimum as posible(to center)
+          children: <Widget>[
+            new RaisedButton(
+                color: categoryFlag == "users" ? Colors.white : Colors.grey,
+                onPressed: (){
+                  setState(() {
+                    categoryFlag = "users";
+                    _filteredArray = _arrayOfUsers;
+                  });
+                }, child: Text('Фотографы')),
+            new RaisedButton(
+                color: categoryFlag == "albums" ? Colors.white : Colors.grey,
+                onPressed: (){
+                  setState(() {
+                    categoryFlag = "albums";
+                    _filteredArray = _arrayOfAlbums;
+                  });
+                }, child: Text('Альбомы')),
+            new RaisedButton(
+                color: categoryFlag == "photos" ? Colors.white : Colors.grey,
+                onPressed: (){
+                  setState(() {
+                    categoryFlag = "photos";
+                    _filteredArray = _arrayOfPhotos;
+                  });
+                }, child: Text('Фотографии')),
+          ],
+        ),
+            ),
+            Expanded (
+                child: Container (
+                  //padding: EdgeInsets.only(top: 10),
+                  child: categoryFlag == "albums" ?
+
+
+                      Container (
+                        alignment: Alignment(0.0, -1.0),
+                      child: checkAlbumError ? Container(
+                          padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+                          child: Row(
+                              children:[
+                                Expanded(
+                                    child: Container(
+                                      color: Colors.white,
+                                      padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                                      child: Text('Что-то пошло не так'),
+                                    ))])
+
+                      ) : _filteredArray.length == 0 ? Container(
+                          padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+                          child: Row(
+                              children:[
+                                Expanded(
+                                    child: Container(
+                                      color: Colors.white,
+                                      padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                                      child: Text('Нет данных'),
+                                    ))])
+
+                      ) :
+                      ListView.builder(
+                      itemCount: _arrayOfAlbums == null ? 0 : _filteredArray.length,
+                          itemBuilder: (context, i){
+                            return new ListTile(
+                              title: Container (
+                                  color: Colors.white,
+                                  child: Row(
+                                      children:[
+                                        Expanded(
+                                            child: Container(
+                                                child: Column (
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Container (
+                                                      padding: EdgeInsets.fromLTRB(10, 10, 0, 2),
+                                                      child: RichText(
+                                                        text: TextSpan(
+                                                          style: DefaultTextStyle.of(context).style,
+                                                          children: <TextSpan>[
+                                                            TextSpan(text: 'Title: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                                            TextSpan(text: "${_filteredArray[i]["title"]}"),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Container (
+                                                      padding: EdgeInsets.fromLTRB(10, 2, 0, 10),
+                                                      child: RichText(
+                                                        text: TextSpan(
+                                                          style: DefaultTextStyle.of(context).style,
+                                                          children: <TextSpan>[
+                                                            TextSpan(text: 'ID: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                                            TextSpan(text: "${_filteredArray[i]["id"]}"),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                ))),
+                                      ]
+                                  )),
+                            );
+                          }
+                      ),)
+
+
+                      : categoryFlag == "photos" ?
+                  Container (
+                      alignment: Alignment(0.0, -1.0),
+                      child: _filteredArray.length == 0 ? Container(
+                          padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+                          child: Row(
+                              children:[
+                                Expanded(
+                                    child: Container(
+                                      color: Colors.white,
+                                      padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                                      child: Text('Нет данных'),
+                                    ))])
+
+                      ) : ListView.builder(
+                          itemCount: _filteredArray.length,
+                          itemBuilder: (context, i){
+                            return new Container(
+                                padding: EdgeInsets.only(bottom: 10),
+                                child: Column(
+                                    children:[
+                                      Container (
+                                          color: Colors.white,
+                                          child: Row (
+                                              children: [
+                                                Container (
+                                                  width: 120.0,
+                                                  height: 120.0,
+                                                  padding: EdgeInsets.all(10),
+                                                  child: !isConnected ? Image.asset(
+                                                    'assets/images/placeholder.png',
+                                                    width: 100.0, height: 100.0, fit: BoxFit.cover,
+                                                  )
+                                                      : CachedNetworkImage(
+                                                    imageUrl: "${_filteredArray[i]["url"]}",
+                                                    width: 100.0, height: 100.0, fit: BoxFit.cover,
+                                                    placeholder: (context, url) => CircularProgressIndicator(),
+                                                    errorWidget: (context, url, error) => Icon(Icons.error),
+                                                  ),
+                                                ),
+                                                Expanded(child: Column (
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Container (
+                                                      padding: EdgeInsets.all(10),
+                                                      child: RichText(
+                                                        text: TextSpan(
+                                                          style: DefaultTextStyle.of(context).style,
+                                                          children: <TextSpan>[
+                                                            TextSpan(text: 'Title: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                                            TextSpan(text: "${_filteredArray[i]["title"]}"),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Container (
+                                                      padding: EdgeInsets.all(10),
+                                                      child: RichText(
+                                                        text: TextSpan(
+                                                          style: DefaultTextStyle.of(context).style,
+                                                          children: <TextSpan>[
+                                                            TextSpan(text: 'ID: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                                            TextSpan(text: "${_filteredArray[i]["id"]}"),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                ))
+                                              ]
+                                          )
+                                      ),
+                                    ]
+                                ));
+                          }
+                      ))
+
+
+                      : Container (
+                    child: _filteredArray.length == 0 ? Container(
+                        alignment: Alignment(0.0, -1.0),
+                        padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+                        child: Row(
+                            children:[
+                              Expanded(
+                                  child: Container(
+                                    color: Colors.white,
+                                    padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                                    child: Text('Нет данных'),
+                                  ))])
+
+                    ) :
+                    ListView.builder(
+                        itemCount: _filteredArray.length,
+                        itemBuilder: (context, i){
+                          return new ListTile(
+                            title: Container (
+                                color: Colors.white,
+                                child: Row(
+                                    children:[
+                                      Expanded(
+                                        child: Container(
+                                            child: Container(
+                                                child: Column (
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Container (
+                                                      padding: EdgeInsets.fromLTRB(10, 10, 0, 0),
+                                                      child: RichText(
+                                                        text: TextSpan(
+                                                          style: DefaultTextStyle.of(context).style,
+                                                          children: <TextSpan>[
+                                                            TextSpan(text: 'Name: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                                            TextSpan(text: "${_filteredArray[i]["name"]}"),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Container (
+                                                      padding: EdgeInsets.fromLTRB(10, 2, 0, 2),
+                                                      child: RichText(
+                                                        text: TextSpan(
+                                                          style: DefaultTextStyle.of(context).style,
+                                                          children: <TextSpan>[
+                                                            TextSpan(text: 'Nickname: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                                            TextSpan(text: "${_filteredArray[i]["username"]}"),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Container (
+                                                      padding: EdgeInsets.fromLTRB(10, 0, 0, 10),
+                                                      child: RichText(
+                                                        text: TextSpan(
+                                                          style: DefaultTextStyle.of(context).style,
+                                                          children: <TextSpan>[
+                                                            TextSpan(text: 'email: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                                                            TextSpan(text: "${_filteredArray[i]["email"]}"),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                ))
+                                        ),),
+                                    ]
+                                )),
+                          );
+                        }
+                    ),
+                  ),
+
+                )
+            ),
+          ],
+        )
+            :
         Column (
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -290,7 +704,7 @@ class MyBodyState extends State<MyBody> {
                           )
                     )
                     : ListView.builder(
-                      itemCount: _array.length,
+                      itemCount: _arrayOfUsers.length,
                       itemBuilder: (context, i){
                         return new ListTile(
                           title: Container (
@@ -310,7 +724,7 @@ class MyBodyState extends State<MyBody> {
                                                         style: DefaultTextStyle.of(context).style,
                                                         children: <TextSpan>[
                                                           TextSpan(text: 'Name: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                          TextSpan(text: "${_array[i]["name"]}"),
+                                                          TextSpan(text: "${_arrayOfUsers[i]["name"]}"),
                                                         ],
                                                       ),
                                                     ),
@@ -322,7 +736,7 @@ class MyBodyState extends State<MyBody> {
                                                         style: DefaultTextStyle.of(context).style,
                                                         children: <TextSpan>[
                                                           TextSpan(text: 'Nickname: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                          TextSpan(text: "${_array[i]["username"]}"),
+                                                          TextSpan(text: "${_arrayOfUsers[i]["username"]}"),
                                                         ],
                                                       ),
                                                     ),
@@ -334,7 +748,7 @@ class MyBodyState extends State<MyBody> {
                                                         style: DefaultTextStyle.of(context).style,
                                                         children: <TextSpan>[
                                                           TextSpan(text: 'email: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                          TextSpan(text: "${_array[i]["email"]}"),
+                                                          TextSpan(text: "${_arrayOfUsers[i]["email"]}"),
                                                         ],
                                                       ),
                                                     ),
@@ -344,9 +758,9 @@ class MyBodyState extends State<MyBody> {
                                       ),),
                                 ]
                             )),
-                          onTap: () =>  onTapped("${_array[i]["id"]}"),
+                          onTap: () =>  onTapped("${_arrayOfUsers[i]["id"]}"),
                         onLongPress: () =>  {
-                            myController.text = "${_array[i]["name"]}",
+                            myController.text = "${_arrayOfUsers[i]["name"]}",
                             _showChangeDialog(i)
                         },);
                       }

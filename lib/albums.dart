@@ -85,7 +85,6 @@ class AlbumsBodyState extends State<AlbumsBody> {
                 _filteredArrayOfAlbums = _arrayOfAlbums;
                 for (int i = 0; i < _filteredArrayOfAlbums.length; i++) {
                   if (_filteredArrayOfAlbums[i]['title'].toLowerCase().contains(value.trim().toLowerCase())) {
-                  //if (_filteredArrayOfAlbums[i]['title'].toLowerCase().contains(removeSpaces(value).toLowerCase())) {
                     tempList.add(_filteredArrayOfAlbums[i]);
                   }
                 }
