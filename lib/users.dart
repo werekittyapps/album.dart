@@ -239,9 +239,6 @@ class MyBodyState extends State<MyBody> {
           _arrayOfUsers = data;
           _arrayOfAlbums = albumData;
           _arrayOfPhotos = photoData;
-          //if (categoryFlag == "users") _filteredArray = _arrayOfUsers;
-          //if (categoryFlag == "albums") _filteredArray = _arrayOfAlbums;
-          //if (categoryFlag == "photos") _filteredArray = _arrayOfPhotos;
         });
       }
   }
@@ -308,18 +305,15 @@ class MyBodyState extends State<MyBody> {
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.mobile) {
       // I am connected to a mobile network.
-      print("mobile connection");
       setState(() {
         isConnected = true;
       });
     } else if (connectivityResult == ConnectivityResult.wifi) {
       // I am connected to a wifi network.
-      print("wifi connection");
       setState(() {
         isConnected = true;
       });
-    }else {
-      print("no connection");
+    } else {
       setState(() {
         isConnected = false;
       });
@@ -385,12 +379,16 @@ class MyBodyState extends State<MyBody> {
                   for (var i = 0; i <= 9; i++) {
                     _partlyFilteredArrayOfPhotos.add(_filteredArrayOfPhotos[i]);
                   }
+                } else {
+                  for (var i = 0; i <= _filteredArrayOfPhotos.length - 1; i++) {
+                    _partlyFilteredArrayOfPhotos.add(_filteredArrayOfPhotos[i]);
+                  }
                 }
                 if(_filteredArrayOfUsers.isNotEmpty && categoryFlag == "users") categoryFlag = "users";
                 if(_filteredArrayOfAlbums.isNotEmpty && categoryFlag == "albums") categoryFlag = "albums";
                 if(_filteredArrayOfPhotos.isNotEmpty && categoryFlag == "photos") categoryFlag = "photos";
-                if(_filteredArrayOfUsers.isEmpty && categoryFlag == "users") categoryFlag = "albums";
-                if(_filteredArrayOfAlbums.isEmpty && categoryFlag == "albums") categoryFlag = "users";
+                if(_filteredArrayOfUsers.isEmpty  && _filteredArrayOfAlbums.isNotEmpty && categoryFlag == "users") categoryFlag = "albums";
+                if(_filteredArrayOfAlbums.isEmpty && _filteredArrayOfUsers.isNotEmpty && categoryFlag == "albums") categoryFlag = "users";
                 if(_filteredArrayOfUsers.isNotEmpty && _filteredArrayOfAlbums.isEmpty && _filteredArrayOfPhotos.isEmpty) categoryFlag = "users";
                 if(_filteredArrayOfUsers.isEmpty && _filteredArrayOfAlbums.isNotEmpty && _filteredArrayOfPhotos.isEmpty) categoryFlag = "albums";
                 if(_filteredArrayOfUsers.isEmpty && _filteredArrayOfAlbums.isEmpty && _filteredArrayOfPhotos.isNotEmpty) categoryFlag = "photos";
@@ -434,7 +432,7 @@ class MyBodyState extends State<MyBody> {
     //          placeholder: (context, url) => CircularProgressIndicator(),
     //          errorWidget: (context, url, error) => Icon(Icons.error),
     //        );
-    //} catch(e) {
+    //} on DioError catch(e) {
     //  print("Error: $e");
     //}
     checkInternet();

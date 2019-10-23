@@ -27,7 +27,6 @@ class PhotosBodyState extends State<PhotosBody> {
   var drawIndex = 0;
 
   bool isConnected = false;
-  //bool connectionChecked = false;
   bool continueOffline = true;
 
   String errorMessage = "";
@@ -52,6 +51,10 @@ class PhotosBodyState extends State<PhotosBody> {
         for (var i = 0; i <= 9; i++) {
           photosData.add(photosDataFull[i]);
         }
+      } else {
+        for (var i = 0; i <= photosDataFull.length - 1; i++) {
+          photosData.add(photosDataFull[i]);
+        }
       }
       setState(() {
         _arrayOfPhotos = photosData;
@@ -60,27 +63,21 @@ class PhotosBodyState extends State<PhotosBody> {
   }
 
   checkInternet() async{
-    print('here');
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.mobile) {
       // I am connected to a mobile network.
-      print("mobile");
       setState(() {
         isConnected = true;
-        //connectionChecked = true;
       });
     } else if (connectivityResult == ConnectivityResult.wifi) {
       // I am connected to a wifi network.
-      print("wifi");
       setState(() {
         isConnected = true;
-        //connectionChecked = true;
       });
     }else {
       print("no");
       setState(() {
         isConnected = false;
-        //connectionChecked = true;
       });
     }
   }
