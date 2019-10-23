@@ -19,7 +19,10 @@ class MyBodyState extends State<MyBody> {
   List _arrayOfAlbums = [];
   List _arrayOfPhotos = [];
 
-  List _filteredArray = [];
+  List _filteredArrayOfUsers = [];
+  List _filteredArrayOfAlbums = [];
+  List _filteredArrayOfPhotos = [];
+  List _partlyFilteredArrayOfPhotos = [];
 
   var data = [];
 
@@ -38,6 +41,7 @@ class MyBodyState extends State<MyBody> {
   var searchFlag = false;
   bool isConnected = false;
   bool isLoading = false;
+  bool emptySearchCall = false;
 
   getData() async{
     setState(() {
@@ -56,7 +60,7 @@ class MyBodyState extends State<MyBody> {
         getDataPrefs.setString('users', json.encode(data));
         setState(() {
           _arrayOfUsers = data;
-          if (categoryFlag == "users") _filteredArray = _arrayOfUsers;
+          //if (categoryFlag == "users") _filteredArray = _arrayOfUsers;
         });
       }
       if(response.statusCode == 400) {
@@ -100,9 +104,9 @@ class MyBodyState extends State<MyBody> {
         var albums = response.data;
         getDataPrefs.setString('albums', json.encode(albums));
         _arrayOfAlbums = albums;
-        setState(() {
-          if (categoryFlag == "albums") _filteredArray = _arrayOfAlbums;
-        });
+        //setState(() {
+        //  if (categoryFlag == "albums") _filteredArray = _arrayOfAlbums;
+        //});
       }
       if(response.statusCode == 400) {
         setState(() {
@@ -150,7 +154,7 @@ class MyBodyState extends State<MyBody> {
         getDataPrefs.setString('photos', json.encode(photos));
         _arrayOfPhotos = photos;
         setState(() {
-          if (categoryFlag == "photos") _filteredArray = _arrayOfPhotos;
+          //if (categoryFlag == "photos") _filteredArray = _arrayOfPhotos;
           isLoading = false;
         });
       }
@@ -235,9 +239,9 @@ class MyBodyState extends State<MyBody> {
           _arrayOfUsers = data;
           _arrayOfAlbums = albumData;
           _arrayOfPhotos = photoData;
-          if (categoryFlag == "users") _filteredArray = _arrayOfUsers;
-          if (categoryFlag == "albums") _filteredArray = _arrayOfAlbums;
-          if (categoryFlag == "photos") _filteredArray = _arrayOfPhotos;
+          //if (categoryFlag == "users") _filteredArray = _arrayOfUsers;
+          //if (categoryFlag == "albums") _filteredArray = _arrayOfAlbums;
+          //if (categoryFlag == "photos") _filteredArray = _arrayOfPhotos;
         });
       }
   }
@@ -286,6 +290,11 @@ class MyBodyState extends State<MyBody> {
     prefs.clear();
     DefaultCacheManager().emptyCache();
     setState(() {
+      emptySearchCall = false;
+      this._searchIcon = new Icon(Icons.search);
+      this._appBarTitle = new Text('Photographers');
+      searchFlag = false;
+      _filter.clear();
       data.clear();
       _arrayOfUsers.clear();
       _arrayOfAlbums.clear();
@@ -318,14 +327,120 @@ class MyBodyState extends State<MyBody> {
     }
   }
 
+  //searching(){
+  //  getCached();
+  //  emptySearchCall = true;
+  //  setState(() {
+  //    if (this._searchIcon.icon == Icons.search) {
+  //      searchFlag = true;
+  //      //if (categoryFlag == "users") _filteredArray = _arrayOfUsers;
+  //      //if (categoryFlag == "albums") _filteredArray = _arrayOfAlbums;
+  //      //if (categoryFlag == "photos") _filteredArray = _arrayOfPhotos;
+  //      this._searchIcon = new Icon(Icons.close);
+  //      this._appBarTitle = new TextField(
+  //          controller: _filter,
+  //          decoration: new InputDecoration(
+  //            prefixIcon: new Icon(Icons.search),
+  //            hintText: 'Search...',
+  //          ),
+  //          onChanged: (value) {
+  //            //if (value.length >= 2) {
+  //              if (categoryFlag == "albums") {
+  //                List tempList = new List();
+  //                _filteredArray = _arrayOfAlbums;
+  //                if (value.length >= 2) {
+  //                  emptySearchCall = false;
+  //                  for (int i = 0; i < _filteredArray.length; i++) {
+  //                    if (_filteredArray[i]['title'].toLowerCase().contains(
+  //                        value.trim().toLowerCase())) {
+  //                      tempList.add(_filteredArray[i]);
+  //                    }
+  //                  }
+  //                } else {
+  //                  //tempList = _arrayOfAlbums;
+  //                  tempList.clear();
+  //                  setState(() {
+  //                    if (_arrayOfAlbums.isNotEmpty) {
+  //                      emptySearchCall = true;
+  //                    } else {
+  //                      emptySearchCall = false;
+  //                    }
+  //                  });
+  //                }
+  //                setState(() {
+  //                  _filteredArray = tempList;
+  //                });
+  //              }
+  //              if (categoryFlag == "photos") {
+  //                List tempList = new List();
+  //                _filteredArray = _arrayOfPhotos;
+  //                if (value.length >= 2) {
+  //                  emptySearchCall = false;
+  //                  for (int i = 0; i < _filteredArray.length; i++) {
+  //                    if (_filteredArray[i]['title'].toLowerCase().contains(
+  //                        value.trim().toLowerCase())) {
+  //                      tempList.add(_filteredArray[i]);
+  //                    }
+  //                  }
+  //                } else {
+  //                  //tempList = _arrayOfPhotos;
+  //                  tempList.clear();
+  //                  setState(() {
+  //                    if (_arrayOfPhotos.isNotEmpty) {
+  //                      emptySearchCall = true;
+  //                    } else {
+  //                      emptySearchCall = false;
+  //                    }
+  //                  });
+  //                }
+  //                setState(() {
+  //                  _filteredArray = tempList;
+  //                });
+  //              }
+  //              if (categoryFlag == "users") {
+  //                List tempList = new List();
+  //                _filteredArray = _arrayOfUsers;
+  //                if (value.length >= 2) {
+  //                  emptySearchCall = false;
+  //                  for (int i = 0; i < _filteredArray.length; i++) {
+  //                    if (_filteredArray[i]['name'].toLowerCase().contains(
+  //                        value.trim().toLowerCase())) {
+  //                      tempList.add(_filteredArray[i]);
+  //                    }
+  //                  }
+  //                } else {
+  //                  //tempList = _arrayOfUsers;
+  //                  tempList.clear();
+  //                  setState(() {
+  //                    if (_arrayOfUsers.isNotEmpty) {
+  //                      emptySearchCall = true;
+  //                    } else {
+  //                      emptySearchCall = false;
+  //                    }
+  //                  });
+  //                }
+  //                setState(() {
+  //                  _filteredArray = tempList;
+  //                });
+  //              }
+  //            //}
+  //          }
+  //      );
+  //    } else {
+  //      this._searchIcon = new Icon(Icons.search);
+  //      this._appBarTitle = new Text('Photographers');
+  //      searchFlag = false;
+  //      _filter.clear();
+  //    }
+  //  });
+  //}
+
   searching(){
     getCached();
+    emptySearchCall = true;
     setState(() {
       if (this._searchIcon.icon == Icons.search) {
-        searchFlag = true;
-        if (categoryFlag == "users") _filteredArray = _arrayOfUsers;
-        if (categoryFlag == "albums") _filteredArray = _arrayOfAlbums;
-        if (categoryFlag == "photos") _filteredArray = _arrayOfPhotos;
+        //searchFlag = true;
         this._searchIcon = new Icon(Icons.close);
         this._appBarTitle = new TextField(
             controller: _filter,
@@ -334,59 +449,54 @@ class MyBodyState extends State<MyBody> {
               hintText: 'Search...',
             ),
             onChanged: (value) {
-              //if (value.length >= 2) {
-                if (categoryFlag == "albums") {
-                  List tempList = new List();
-                  _filteredArray = _arrayOfAlbums;
-                  if (value.length >= 2) {
-                    for (int i = 0; i < _filteredArray.length; i++) {
-                      if (_filteredArray[i]['title'].toLowerCase().contains(
-                          value.trim().toLowerCase())) {
-                        tempList.add(_filteredArray[i]);
-                      }
-                    }
-                  } else {
-                    tempList = _arrayOfAlbums;
+              var val = value;
+              _filteredArrayOfUsers = _arrayOfUsers;
+              _filteredArrayOfAlbums = _arrayOfAlbums;
+              _filteredArrayOfPhotos = _arrayOfPhotos;
+              _partlyFilteredArrayOfPhotos.clear();
+              List usersTempList = new List();
+              List albumsTempList = new List();
+              List photosTempList = new List();
+              if(val.length >= 2){
+                setState(() {
+                  searchFlag = true;
+                  emptySearchCall = false;
+                });
+                for (int i = 0; i < _filteredArrayOfUsers.length; i++) {
+                  if (_filteredArrayOfUsers[i]['name'].toLowerCase().contains(
+                      val.trim().toLowerCase())) {
+                    usersTempList.add(_filteredArrayOfUsers[i]);
                   }
-                  setState(() {
-                    _filteredArray = tempList;
-                  });
                 }
-                if (categoryFlag == "photos") {
-                  List tempList = new List();
-                  _filteredArray = _arrayOfPhotos;
-                  if (value.length >= 2) {
-                    for (int i = 0; i < _filteredArray.length; i++) {
-                      if (_filteredArray[i]['title'].toLowerCase().contains(
-                          value.trim().toLowerCase())) {
-                        tempList.add(_filteredArray[i]);
-                      }
-                    }
-                  } else {
-                    tempList = _arrayOfPhotos;
+                for (int i = 0; i < _filteredArrayOfAlbums.length; i++) {
+                  if (_filteredArrayOfAlbums[i]['title'].toLowerCase().contains(
+                      val.trim().toLowerCase())) {
+                    albumsTempList.add(_filteredArrayOfAlbums[i]);
                   }
-                  setState(() {
-                    _filteredArray = tempList;
-                  });
                 }
-                if (categoryFlag == "users") {
-                  List tempList = new List();
-                  _filteredArray = _arrayOfUsers;
-                  if (value.length >= 2) {
-                    for (int i = 0; i < _filteredArray.length; i++) {
-                      if (_filteredArray[i]['name'].toLowerCase().contains(
-                          value.trim().toLowerCase())) {
-                        tempList.add(_filteredArray[i]);
-                      }
-                    }
-                  } else {
-                    tempList = _arrayOfUsers;
+                for (int i = 0; i < _filteredArrayOfPhotos.length; i++) {
+                  if (_filteredArrayOfPhotos[i]['title'].toLowerCase().contains(
+                      val.trim().toLowerCase())) {
+                    photosTempList.add(_filteredArrayOfPhotos[i]);
                   }
-                  setState(() {
-                    _filteredArray = tempList;
-                  });
                 }
-              //}
+              } else {
+                searchFlag = false;
+                usersTempList.clear();
+                albumsTempList.clear();
+                photosTempList.clear();
+              }
+              setState(() {
+                searchFlag = searchFlag;
+                _filteredArrayOfUsers = usersTempList;
+                _filteredArrayOfAlbums = albumsTempList;
+                _filteredArrayOfPhotos = photosTempList;
+                if(_filteredArrayOfPhotos.length >= 10) {
+                  for (var i = 0; i <= 9; i++) {
+                    _partlyFilteredArrayOfPhotos.add(_filteredArrayOfPhotos[i]);
+                  }
+                }
+              });
             }
         );
       } else {
@@ -396,7 +506,26 @@ class MyBodyState extends State<MyBody> {
         _filter.clear();
       }
     });
+  }
 
+  onMoreBtnTapped(){
+    setState(() {
+      var dif = _filteredArrayOfPhotos.length - _partlyFilteredArrayOfPhotos.length;
+      var filteredLength = _partlyFilteredArrayOfPhotos.length;
+      if(dif >= 10) {
+        for (var i = filteredLength; i < filteredLength + 10; i++) {
+          _partlyFilteredArrayOfPhotos.add(_filteredArrayOfPhotos[i]);
+        }
+      }
+      else {
+        for (var i = filteredLength; i < filteredLength + dif; i++) {
+          _partlyFilteredArrayOfPhotos.add(_filteredArrayOfPhotos[i]);
+        }
+      }
+    }
+    );
+    print("All: ${_filteredArrayOfPhotos.length}");
+    print("Part: ${_partlyFilteredArrayOfPhotos.length}");
   }
 
 
@@ -419,7 +548,8 @@ class MyBodyState extends State<MyBody> {
             // action button
             IconButton(
               icon: _searchIcon,
-              onPressed: () {
+              onPressed: _arrayOfUsers.isEmpty && _arrayOfAlbums.isEmpty && _arrayOfPhotos.isEmpty ? null : () {
+                checkInternet();
                 searching();
               },
             ),
@@ -435,45 +565,68 @@ class MyBodyState extends State<MyBody> {
         Column (
           children: [
             Container(
-              child: ButtonBar(
-          mainAxisSize: MainAxisSize.min, // this will take space as minimum as posible(to center)
-          children: <Widget>[
-            new RaisedButton(
-                color: categoryFlag == "users" ? Colors.white : Colors.grey,
-                onPressed: (){
-                  setState(() {
-                    categoryFlag = "users";
-                    _filteredArray = _arrayOfUsers;
-                  });
-                }, child: Text('Фотографы')),
-            new RaisedButton(
-                color: categoryFlag == "albums" ? Colors.white : Colors.grey,
-                onPressed: (){
-                  setState(() {
-                    categoryFlag = "albums";
-                    _filteredArray = _arrayOfAlbums;
-                  });
-                }, child: Text('Альбомы')),
-            new RaisedButton(
-                color: categoryFlag == "photos" ? Colors.white : Colors.grey,
-                onPressed: (){
-                  setState(() {
-                    categoryFlag = "photos";
-                    checkInternet();
-                    _filteredArray = _arrayOfPhotos;
-                  });
-                }, child: Text('Фотографии')),
-          ],
-        ),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                    child:
+                      Container(
+                        padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                        child:
+                          Row (
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: <Widget>[
+                              _filteredArrayOfUsers.isEmpty ? Container() :
+                              Container(
+                                padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+                                child: RaisedButton(
+                                    color: categoryFlag == "users" ? Colors.white : Colors.grey,
+                                    onPressed: (){
+                                      setState(() {
+                                        categoryFlag = "users";
+                                      });
+                                    }, child: Text('Фотографы')),
+                              ),
+                              _filteredArrayOfAlbums.isEmpty ? Container() :
+                              Container(
+                                padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+                                child: RaisedButton(
+                                    color: categoryFlag == "albums" ? Colors.white : Colors.grey,
+                                    onPressed: (){
+                                      setState(() {
+                                        categoryFlag = "albums";
+                                      });
+                                    }, child: Text('Альбомы')),
+                              ),
+                              _filteredArrayOfPhotos.isEmpty ? Container() :
+                              Container(
+                                padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+                                child: RaisedButton(
+                                    color: categoryFlag == "photos" ? Colors.white : Colors.grey,
+                                    onPressed: (){
+                                      setState(() {
+                                        categoryFlag = "photos";
+                                        checkInternet();
+                                      });
+                                    }, child: Text('Фотографии')),
+                              ),
+                            ],
+                        ),
+                      )
+                  )
+                ],
+              ),
             ),
             Expanded (
                 child: Container (
-                  child: categoryFlag == "albums" ?
+                  child:
 
 
+                  categoryFlag == "albums" ?
                       Container (
                         alignment: Alignment(0.0, -1.0),
                       child: isLoading ? CircularProgressIndicator()
+                          :
+                      emptySearchCall ? Container()
                           :
                       checkAlbumError ? Container(
                           padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
@@ -486,20 +639,23 @@ class MyBodyState extends State<MyBody> {
                                       child: Text('Что-то пошло не так'),
                                     ))])
 
-                      ) : _filteredArray.length == 0 ? Container(
-                          padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
-                          child: Row(
-                              children:[
-                                Expanded(
-                                    child: Container(
-                                      color: Colors.white,
-                                      padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-                                      child: Text('Нет данных'),
-                                    ))])
-
-                      ) :
+                      )
+                      //    : _filteredArray.length == 0 ? Container(
+                      //    padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+                      //    child: Row(
+                      //        children:[
+                      //          Expanded(
+                      //              child: Container(
+                      //                color: Colors.white,
+                      //                padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                      //                child: Text('Нет данных'),
+                      //              ))])
+//
+                      //)
+                          :
                       ListView.builder(
-                      itemCount: _arrayOfAlbums == null ? 0 : _filteredArray.length,
+                      //itemCount: _arrayOfAlbums == null ? 0 : _filteredArray.length,
+                      itemCount: _filteredArrayOfAlbums.length,
                           itemBuilder: (context, i){
                             return new ListTile(
                               title: Container (
@@ -518,7 +674,7 @@ class MyBodyState extends State<MyBody> {
                                                           style: DefaultTextStyle.of(context).style,
                                                           children: <TextSpan>[
                                                             TextSpan(text: 'Title: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                            TextSpan(text: "${_filteredArray[i]["title"]}"),
+                                                            TextSpan(text: "${_filteredArrayOfAlbums[i]["title"]}"),
                                                           ],
                                                         ),
                                                       ),
@@ -530,7 +686,7 @@ class MyBodyState extends State<MyBody> {
                                                           style: DefaultTextStyle.of(context).style,
                                                           children: <TextSpan>[
                                                             TextSpan(text: 'ID: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                            TextSpan(text: "${_filteredArray[i]["id"]}"),
+                                                            TextSpan(text: "${_filteredArrayOfAlbums[i]["id"]}"),
                                                           ],
                                                         ),
                                                       ),
@@ -549,7 +705,9 @@ class MyBodyState extends State<MyBody> {
                       alignment: Alignment(0.0, -1.0),
                       child: isLoading ? CircularProgressIndicator()
                           :
-                      _filteredArray.length == 0 ? Container(
+                      emptySearchCall ? Container()
+                          :
+                      checkPhotoError ? Container(
                           padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
                           child: Row(
                               children:[
@@ -557,11 +715,25 @@ class MyBodyState extends State<MyBody> {
                                     child: Container(
                                       color: Colors.white,
                                       padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-                                      child: Text('Нет данных'),
+                                      child: Text('Что-то пошло не так'),
                                     ))])
 
-                      ) : ListView.builder(
-                          itemCount: _filteredArray.length,
+                      )
+                      //    :
+                      //_filteredArray.length == 0 ? Container(
+                      //    padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+                      //    child: Row(
+                      //        children:[
+                      //          Expanded(
+                      //              child: Container(
+                      //                color: Colors.white,
+                      //                padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                      //                child: Text('Нет данных'),
+                      //              ))])
+//
+                      //)
+                          : ListView.builder(
+                          itemCount: _partlyFilteredArrayOfPhotos.length,
                           itemBuilder: (context, i){
                             return new Container(
                                 padding: EdgeInsets.only(bottom: 10),
@@ -580,7 +752,7 @@ class MyBodyState extends State<MyBody> {
                                                     width: 100.0, height: 100.0, fit: BoxFit.cover,
                                                   )
                                                       : CachedNetworkImage(
-                                                    imageUrl: "${_filteredArray[i]["url"]}",
+                                                    imageUrl: "${_partlyFilteredArrayOfPhotos[i]["url"]}",
                                                     width: 100.0, height: 100.0, fit: BoxFit.cover,
                                                     placeholder: (context, url) => CircularProgressIndicator(),
                                                     errorWidget: (context, url, error) => Icon(Icons.error),
@@ -596,7 +768,7 @@ class MyBodyState extends State<MyBody> {
                                                           style: DefaultTextStyle.of(context).style,
                                                           children: <TextSpan>[
                                                             TextSpan(text: 'Title: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                            TextSpan(text: "${_filteredArray[i]["title"]}"),
+                                                            TextSpan(text: "${_partlyFilteredArrayOfPhotos[i]["title"]}"),
                                                           ],
                                                         ),
                                                       ),
@@ -608,7 +780,7 @@ class MyBodyState extends State<MyBody> {
                                                           style: DefaultTextStyle.of(context).style,
                                                           children: <TextSpan>[
                                                             TextSpan(text: 'ID: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                            TextSpan(text: "${_filteredArray[i]["id"]}"),
+                                                            TextSpan(text: "${_partlyFilteredArrayOfPhotos[i]["id"]}"),
                                                           ],
                                                         ),
                                                       ),
@@ -618,6 +790,15 @@ class MyBodyState extends State<MyBody> {
                                               ]
                                           )
                                       ),
+                                      if (i == _partlyFilteredArrayOfPhotos.length - 1 && _partlyFilteredArrayOfPhotos.length != _filteredArrayOfPhotos.length)
+                                        Container(
+                                            padding: EdgeInsets.only(top: 10),
+                                            child:RaisedButton(
+                                                color: Colors.white,
+                                                onPressed: (){
+                                                  checkInternet();
+                                                  onMoreBtnTapped();
+                                                }, child: Text('Еще'))),
                                     ]
                                 ));
                           }
@@ -628,7 +809,9 @@ class MyBodyState extends State<MyBody> {
                     alignment: Alignment(0.0, -1.0),
                     child: isLoading ? CircularProgressIndicator()
                         :
-                    _filteredArray.length == 0 ? Container(
+                    emptySearchCall ? Container()
+                        :
+                    checkError ? Container(
                         padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
                         child: Row(
                             children:[
@@ -636,12 +819,26 @@ class MyBodyState extends State<MyBody> {
                                   child: Container(
                                     color: Colors.white,
                                     padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-                                    child: Text('Нет данных'),
+                                    child: Text('Что-то пошло не так'),
                                   ))])
 
-                    ) :
+                    )
+                    //    :
+                    //_filteredArray.length == 0 ? Container(
+                    //    padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+                    //    child: Row(
+                    //        children:[
+                    //          Expanded(
+                    //              child: Container(
+                    //                color: Colors.white,
+                    //                padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                    //                child: Text('Нет данных'),
+                    //              ))])
+//
+                    //)
+                        :
                     ListView.builder(
-                        itemCount: _filteredArray.length,
+                        itemCount: _filteredArrayOfUsers.length,
                         itemBuilder: (context, i){
                           return new ListTile(
                             title: Container (
@@ -661,7 +858,7 @@ class MyBodyState extends State<MyBody> {
                                                           style: DefaultTextStyle.of(context).style,
                                                           children: <TextSpan>[
                                                             TextSpan(text: 'Name: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                            TextSpan(text: "${_filteredArray[i]["name"]}"),
+                                                            TextSpan(text: "${_filteredArrayOfUsers[i]["name"]}"),
                                                           ],
                                                         ),
                                                       ),
@@ -673,7 +870,7 @@ class MyBodyState extends State<MyBody> {
                                                           style: DefaultTextStyle.of(context).style,
                                                           children: <TextSpan>[
                                                             TextSpan(text: 'Nickname: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                            TextSpan(text: "${_filteredArray[i]["username"]}"),
+                                                            TextSpan(text: "${_filteredArrayOfUsers[i]["username"]}"),
                                                           ],
                                                         ),
                                                       ),
@@ -685,7 +882,7 @@ class MyBodyState extends State<MyBody> {
                                                           style: DefaultTextStyle.of(context).style,
                                                           children: <TextSpan>[
                                                             TextSpan(text: 'email: ', style: TextStyle(fontWeight: FontWeight.bold)),
-                                                            TextSpan(text: "${_filteredArray[i]["email"]}"),
+                                                            TextSpan(text: "${_filteredArrayOfUsers[i]["email"]}"),
                                                           ],
                                                         ),
                                                       ),
