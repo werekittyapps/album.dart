@@ -100,6 +100,34 @@ class PhotosBodyState extends State<PhotosBody> {
     }
   }
 
+  cachedImageLoader(int i){
+    //try{
+    //  return CachedNetworkImage(
+    //          imageUrl: "${_partlyFilteredArrayOfPhotos[i]["url"]}",
+    //          width: 100.0, height: 100.0, fit: BoxFit.cover,
+    //          placeholder: (context, url) => CircularProgressIndicator(),
+    //          errorWidget: (context, url, error) => Icon(Icons.error),
+    //        );
+    //} catch(e) {
+    //  print("Error: $e");
+    //}
+    checkInternet();
+
+    if(isConnected){
+      return CachedNetworkImage(
+        imageUrl: "${_arrayOfPhotos[i]["url"]}",
+        width: 100.0, height: 100.0, fit: BoxFit.cover,
+        placeholder: (context, url) => CircularProgressIndicator(),
+        errorWidget: (context, url, error) => Icon(Icons.error),
+      );
+    } else {
+      return Image.asset(
+        'assets/images/placeholder.png',
+        width: 100.0, height: 100.0, fit: BoxFit.cover,
+      );
+    }
+  }
+
   @override
   void initState() {
     getValues();
@@ -154,12 +182,7 @@ class PhotosBodyState extends State<PhotosBody> {
                                                   'assets/images/placeholder.png',
                                                   width: 100.0, height: 100.0, fit: BoxFit.cover,
                                                 )
-                                                    : CachedNetworkImage(
-                                                  imageUrl: "${_arrayOfPhotos[i]["url"]}",
-                                                  width: 100.0, height: 100.0, fit: BoxFit.cover,
-                                                  placeholder: (context, url) => CircularProgressIndicator(),
-                                                  errorWidget: (context, url, error) => Icon(Icons.error),
-                                                ),
+                                                    : cachedImageLoader(i),
                                               ),
                                               Expanded(child: Column (
                                                 crossAxisAlignment: CrossAxisAlignment.start,

@@ -305,142 +305,32 @@ class MyBodyState extends State<MyBody> {
   }
 
   checkInternet() async{
-    print('here');
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.mobile) {
       // I am connected to a mobile network.
-      print("mobile");
+      print("mobile connection");
       setState(() {
         isConnected = true;
       });
     } else if (connectivityResult == ConnectivityResult.wifi) {
       // I am connected to a wifi network.
-      print("wifi");
+      print("wifi connection");
       setState(() {
         isConnected = true;
       });
     }else {
-      print("no");
+      print("no connection");
       setState(() {
         isConnected = false;
       });
     }
   }
 
-  //searching(){
-  //  getCached();
-  //  emptySearchCall = true;
-  //  setState(() {
-  //    if (this._searchIcon.icon == Icons.search) {
-  //      searchFlag = true;
-  //      //if (categoryFlag == "users") _filteredArray = _arrayOfUsers;
-  //      //if (categoryFlag == "albums") _filteredArray = _arrayOfAlbums;
-  //      //if (categoryFlag == "photos") _filteredArray = _arrayOfPhotos;
-  //      this._searchIcon = new Icon(Icons.close);
-  //      this._appBarTitle = new TextField(
-  //          controller: _filter,
-  //          decoration: new InputDecoration(
-  //            prefixIcon: new Icon(Icons.search),
-  //            hintText: 'Search...',
-  //          ),
-  //          onChanged: (value) {
-  //            //if (value.length >= 2) {
-  //              if (categoryFlag == "albums") {
-  //                List tempList = new List();
-  //                _filteredArray = _arrayOfAlbums;
-  //                if (value.length >= 2) {
-  //                  emptySearchCall = false;
-  //                  for (int i = 0; i < _filteredArray.length; i++) {
-  //                    if (_filteredArray[i]['title'].toLowerCase().contains(
-  //                        value.trim().toLowerCase())) {
-  //                      tempList.add(_filteredArray[i]);
-  //                    }
-  //                  }
-  //                } else {
-  //                  //tempList = _arrayOfAlbums;
-  //                  tempList.clear();
-  //                  setState(() {
-  //                    if (_arrayOfAlbums.isNotEmpty) {
-  //                      emptySearchCall = true;
-  //                    } else {
-  //                      emptySearchCall = false;
-  //                    }
-  //                  });
-  //                }
-  //                setState(() {
-  //                  _filteredArray = tempList;
-  //                });
-  //              }
-  //              if (categoryFlag == "photos") {
-  //                List tempList = new List();
-  //                _filteredArray = _arrayOfPhotos;
-  //                if (value.length >= 2) {
-  //                  emptySearchCall = false;
-  //                  for (int i = 0; i < _filteredArray.length; i++) {
-  //                    if (_filteredArray[i]['title'].toLowerCase().contains(
-  //                        value.trim().toLowerCase())) {
-  //                      tempList.add(_filteredArray[i]);
-  //                    }
-  //                  }
-  //                } else {
-  //                  //tempList = _arrayOfPhotos;
-  //                  tempList.clear();
-  //                  setState(() {
-  //                    if (_arrayOfPhotos.isNotEmpty) {
-  //                      emptySearchCall = true;
-  //                    } else {
-  //                      emptySearchCall = false;
-  //                    }
-  //                  });
-  //                }
-  //                setState(() {
-  //                  _filteredArray = tempList;
-  //                });
-  //              }
-  //              if (categoryFlag == "users") {
-  //                List tempList = new List();
-  //                _filteredArray = _arrayOfUsers;
-  //                if (value.length >= 2) {
-  //                  emptySearchCall = false;
-  //                  for (int i = 0; i < _filteredArray.length; i++) {
-  //                    if (_filteredArray[i]['name'].toLowerCase().contains(
-  //                        value.trim().toLowerCase())) {
-  //                      tempList.add(_filteredArray[i]);
-  //                    }
-  //                  }
-  //                } else {
-  //                  //tempList = _arrayOfUsers;
-  //                  tempList.clear();
-  //                  setState(() {
-  //                    if (_arrayOfUsers.isNotEmpty) {
-  //                      emptySearchCall = true;
-  //                    } else {
-  //                      emptySearchCall = false;
-  //                    }
-  //                  });
-  //                }
-  //                setState(() {
-  //                  _filteredArray = tempList;
-  //                });
-  //              }
-  //            //}
-  //          }
-  //      );
-  //    } else {
-  //      this._searchIcon = new Icon(Icons.search);
-  //      this._appBarTitle = new Text('Photographers');
-  //      searchFlag = false;
-  //      _filter.clear();
-  //    }
-  //  });
-  //}
-
   searching(){
     getCached();
     emptySearchCall = true;
     setState(() {
       if (this._searchIcon.icon == Icons.search) {
-        //searchFlag = true;
         this._searchIcon = new Icon(Icons.close);
         this._appBarTitle = new TextField(
             controller: _filter,
@@ -496,6 +386,14 @@ class MyBodyState extends State<MyBody> {
                     _partlyFilteredArrayOfPhotos.add(_filteredArrayOfPhotos[i]);
                   }
                 }
+                if(_filteredArrayOfUsers.isNotEmpty && categoryFlag == "users") categoryFlag = "users";
+                if(_filteredArrayOfAlbums.isNotEmpty && categoryFlag == "albums") categoryFlag = "albums";
+                if(_filteredArrayOfPhotos.isNotEmpty && categoryFlag == "photos") categoryFlag = "photos";
+                if(_filteredArrayOfUsers.isEmpty && categoryFlag == "users") categoryFlag = "albums";
+                if(_filteredArrayOfAlbums.isEmpty && categoryFlag == "albums") categoryFlag = "users";
+                if(_filteredArrayOfUsers.isNotEmpty && _filteredArrayOfAlbums.isEmpty && _filteredArrayOfPhotos.isEmpty) categoryFlag = "users";
+                if(_filteredArrayOfUsers.isEmpty && _filteredArrayOfAlbums.isNotEmpty && _filteredArrayOfPhotos.isEmpty) categoryFlag = "albums";
+                if(_filteredArrayOfUsers.isEmpty && _filteredArrayOfAlbums.isEmpty && _filteredArrayOfPhotos.isNotEmpty) categoryFlag = "photos";
               });
             }
         );
@@ -526,6 +424,34 @@ class MyBodyState extends State<MyBody> {
     );
     print("All: ${_filteredArrayOfPhotos.length}");
     print("Part: ${_partlyFilteredArrayOfPhotos.length}");
+  }
+
+  cachedImageLoader(int i){
+    //try{
+    //  return CachedNetworkImage(
+    //          imageUrl: "${_partlyFilteredArrayOfPhotos[i]["url"]}",
+    //          width: 100.0, height: 100.0, fit: BoxFit.cover,
+    //          placeholder: (context, url) => CircularProgressIndicator(),
+    //          errorWidget: (context, url, error) => Icon(Icons.error),
+    //        );
+    //} catch(e) {
+    //  print("Error: $e");
+    //}
+    checkInternet();
+
+    if(isConnected){
+      return CachedNetworkImage(
+        imageUrl: "${_partlyFilteredArrayOfPhotos[i]["url"]}",
+        width: 100.0, height: 100.0, fit: BoxFit.cover,
+        placeholder: (context, url) => CircularProgressIndicator(),
+        errorWidget: (context, url, error) => Icon(Icons.error),
+      );
+    } else {
+      return Image.asset(
+        'assets/images/placeholder.png',
+        width: 100.0, height: 100.0, fit: BoxFit.cover,
+      );
+    }
   }
 
 
@@ -575,7 +501,7 @@ class MyBodyState extends State<MyBody> {
                           Row (
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: <Widget>[
-                              _filteredArrayOfUsers.isEmpty ? Container() :
+                              if (_filteredArrayOfUsers.isNotEmpty)
                               Container(
                                 padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
                                 child: RaisedButton(
@@ -586,7 +512,7 @@ class MyBodyState extends State<MyBody> {
                                       });
                                     }, child: Text('Фотографы')),
                               ),
-                              _filteredArrayOfAlbums.isEmpty ? Container() :
+                              if (_filteredArrayOfAlbums.isNotEmpty)
                               Container(
                                 padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
                                 child: RaisedButton(
@@ -597,7 +523,7 @@ class MyBodyState extends State<MyBody> {
                                       });
                                     }, child: Text('Альбомы')),
                               ),
-                              _filteredArrayOfPhotos.isEmpty ? Container() :
+                              if (_filteredArrayOfPhotos.isNotEmpty)
                               Container(
                                 padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
                                 child: RaisedButton(
@@ -751,12 +677,14 @@ class MyBodyState extends State<MyBody> {
                                                     'assets/images/placeholder.png',
                                                     width: 100.0, height: 100.0, fit: BoxFit.cover,
                                                   )
-                                                      : CachedNetworkImage(
-                                                    imageUrl: "${_partlyFilteredArrayOfPhotos[i]["url"]}",
-                                                    width: 100.0, height: 100.0, fit: BoxFit.cover,
-                                                    placeholder: (context, url) => CircularProgressIndicator(),
-                                                    errorWidget: (context, url, error) => Icon(Icons.error),
-                                                  ),
+                                                      :
+                                                      cachedImageLoader(i),
+                                                  //CachedNetworkImage(
+                                                  //  imageUrl: "${_partlyFilteredArrayOfPhotos[i]["url"]}",
+                                                  //  width: 100.0, height: 100.0, fit: BoxFit.cover,
+                                                  //  placeholder: (context, url) => CircularProgressIndicator(),
+                                                  //  errorWidget: (context, url, error) => Icon(Icons.error),
+                                                  //),
                                                 ),
                                                 Expanded(child: Column (
                                                   crossAxisAlignment: CrossAxisAlignment.start,
