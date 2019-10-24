@@ -306,21 +306,9 @@ class MyBodyState extends State<MyBody> {
 
   checkInternet() async{
     var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.mobile) {
-      // I am connected to a mobile network.
-      setState(() {
-        isConnected = true;
-      });
-    } else if (connectivityResult == ConnectivityResult.wifi) {
-      // I am connected to a wifi network.
-      setState(() {
-        isConnected = true;
-      });
-    } else {
-      setState(() {
-        isConnected = false;
-      });
-    }
+    if (connectivityResult == ConnectivityResult.mobile) return isConnected = true;
+    if (connectivityResult == ConnectivityResult.wifi) return isConnected = true;
+    return isConnected = false;
   }
 
   searching(){
