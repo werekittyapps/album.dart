@@ -252,34 +252,37 @@ class MyBodyState extends State<MyBody> {
 
   void _showChangeDialog(int index) {
     showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Новое имя'),
+        context: context,
+        builder: (context) {
+          return SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: AlertDialog(
+              title: Text('Новое имя'),
               content: TextField(
-            controller: myController,
-        ),
-          actions: <Widget>[
-            FlatButton(
-              onPressed: () {
-                myController.text = "";
-                Navigator.pop(context);
-              },
-              child: Text('Close'),
+                controller: myController,
+              ),
+              actions: <Widget>[
+                FlatButton(
+                  onPressed: () {
+                    myController.text = "";
+                    Navigator.pop(context);
+                    },
+                  child: Text('Close'),
+                ),
+                FlatButton(
+                  onPressed: () {
+                    print(myController.text);
+                    onChangeName(index, myController.text);
+                    myController.text = "";
+                    Navigator.pop(context);
+                    },
+                  child: Text('Ok'),
+                )
+              ],
             ),
-            FlatButton(
-              onPressed: () {
-                print(myController.text);
-                onChangeName(index, myController.text);
-                myController.text = "";
-                Navigator.pop(context);
-              },
-              child: Text('Ok'),
-            )
-          ],
+          );
+        }
         );
-      }
-    );
   }
 
   deleteCache() async{
@@ -420,21 +423,9 @@ class MyBodyState extends State<MyBody> {
       }
     }
     );
-    print("All: ${_filteredArrayOfPhotos.length}");
-    print("Part: ${_partlyFilteredArrayOfPhotos.length}");
   }
 
   cachedImageLoader(int i){
-    //try{
-    //  return CachedNetworkImage(
-    //          imageUrl: "${_partlyFilteredArrayOfPhotos[i]["url"]}",
-    //          width: 100.0, height: 100.0, fit: BoxFit.cover,
-    //          placeholder: (context, url) => CircularProgressIndicator(),
-    //          errorWidget: (context, url, error) => Icon(Icons.error),
-    //        );
-    //} on DioError catch(e) {
-    //  print("Error: $e");
-    //}
     checkInternet();
 
     if(isConnected){
@@ -493,49 +484,55 @@ class MyBodyState extends State<MyBody> {
                 children: <Widget>[
                   Expanded(
                     child:
-                      Container(
-                        padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                        child:
+                    Container(
+                      alignment: Alignment(0.0, -1.0),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Container(
+                          padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+                          child:
                           Row (
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: <Widget>[
                               if (_filteredArrayOfUsers.isNotEmpty)
-                              Container(
-                                padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
-                                child: RaisedButton(
-                                    color: categoryFlag == "users" ? Colors.white : Colors.grey,
-                                    onPressed: (){
-                                      setState(() {
-                                        categoryFlag = "users";
-                                      });
-                                    }, child: Text('Фотографы')),
-                              ),
+                                Container(
+                                  padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+                                  child: RaisedButton(
+                                      color: categoryFlag == "users" ? Colors.white : Colors.grey,
+                                      onPressed: (){
+                                        setState(() {
+                                          categoryFlag = "users";
+                                        });
+                                      }, child: Text('Фотографы')),
+                                ),
                               if (_filteredArrayOfAlbums.isNotEmpty)
-                              Container(
-                                padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
-                                child: RaisedButton(
-                                    color: categoryFlag == "albums" ? Colors.white : Colors.grey,
-                                    onPressed: (){
-                                      setState(() {
-                                        categoryFlag = "albums";
-                                      });
-                                    }, child: Text('Альбомы')),
-                              ),
+                                Container(
+                                  padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+                                  child: RaisedButton(
+                                      color: categoryFlag == "albums" ? Colors.white : Colors.grey,
+                                      onPressed: (){
+                                        setState(() {
+                                          categoryFlag = "albums";
+                                        });
+                                      }, child: Text('Альбомы')),
+                                ),
                               if (_filteredArrayOfPhotos.isNotEmpty)
-                              Container(
-                                padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
-                                child: RaisedButton(
-                                    color: categoryFlag == "photos" ? Colors.white : Colors.grey,
-                                    onPressed: (){
-                                      setState(() {
-                                        categoryFlag = "photos";
-                                        checkInternet();
-                                      });
-                                    }, child: Text('Фотографии')),
-                              ),
+                                Container(
+                                  padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+                                  child: RaisedButton(
+                                      color: categoryFlag == "photos" ? Colors.white : Colors.grey,
+                                      onPressed: (){
+                                        setState(() {
+                                          categoryFlag = "photos";
+                                          checkInternet();
+                                        });
+                                      }, child: Text('Фотографии')),
+                                ),
                             ],
+                          ),
                         ),
-                      )
+                      ),
+                    )
                   )
                 ],
               ),
@@ -564,18 +561,18 @@ class MyBodyState extends State<MyBody> {
                                     ))])
 
                       )
-                      //    : _filteredArray.length == 0 ? Container(
-                      //    padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
-                      //    child: Row(
-                      //        children:[
-                      //          Expanded(
-                      //              child: Container(
-                      //                color: Colors.white,
-                      //                padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-                      //                child: Text('Нет данных'),
-                      //              ))])
-//
-                      //)
+                          : _filteredArrayOfAlbums.length == 0 && !emptySearchCall ? Container(
+                          padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+                          child: Row(
+                              children:[
+                                Expanded(
+                                    child: Container(
+                                      color: Colors.white,
+                                      padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                                      child: Text('Нет данных'),
+                                    ))])
+
+                      )
                           :
                       ListView.builder(
                       //itemCount: _arrayOfAlbums == null ? 0 : _filteredArray.length,
@@ -643,19 +640,18 @@ class MyBodyState extends State<MyBody> {
                                     ))])
 
                       )
-                      //    :
-                      //_filteredArray.length == 0 ? Container(
-                      //    padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
-                      //    child: Row(
-                      //        children:[
-                      //          Expanded(
-                      //              child: Container(
-                      //                color: Colors.white,
-                      //                padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-                      //                child: Text('Нет данных'),
-                      //              ))])
-//
-                      //)
+                          :
+                      _filteredArrayOfPhotos.length == 0 && !emptySearchCall ? Container(
+                          padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+                          child: Row(
+                              children:[
+                                Expanded(
+                                    child: Container(
+                                      color: Colors.white,
+                                      padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                                      child: Text('Нет данных'),
+                                    ))])
+                      )
                           : ListView.builder(
                           itemCount: _partlyFilteredArrayOfPhotos.length,
                           itemBuilder: (context, i){
@@ -677,12 +673,6 @@ class MyBodyState extends State<MyBody> {
                                                   )
                                                       :
                                                       cachedImageLoader(i),
-                                                  //CachedNetworkImage(
-                                                  //  imageUrl: "${_partlyFilteredArrayOfPhotos[i]["url"]}",
-                                                  //  width: 100.0, height: 100.0, fit: BoxFit.cover,
-                                                  //  placeholder: (context, url) => CircularProgressIndicator(),
-                                                  //  errorWidget: (context, url, error) => Icon(Icons.error),
-                                                  //),
                                                 ),
                                                 Expanded(child: Column (
                                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -749,19 +739,18 @@ class MyBodyState extends State<MyBody> {
                                   ))])
 
                     )
-                    //    :
-                    //_filteredArray.length == 0 ? Container(
-                    //    padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
-                    //    child: Row(
-                    //        children:[
-                    //          Expanded(
-                    //              child: Container(
-                    //                color: Colors.white,
-                    //                padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
-                    //                child: Text('Нет данных'),
-                    //              ))])
-//
-                    //)
+                        :
+                    _filteredArrayOfUsers.length == 0 && !emptySearchCall? Container(
+                        padding: EdgeInsets.fromLTRB(15, 15, 15, 0),
+                        child: Row(
+                            children:[
+                              Expanded(
+                                  child: Container(
+                                    color: Colors.white,
+                                    padding: EdgeInsets.fromLTRB(10, 20, 10, 20),
+                                    child: Text('Нет данных'),
+                                  ))])
+                    )
                         :
                     ListView.builder(
                         itemCount: _filteredArrayOfUsers.length,

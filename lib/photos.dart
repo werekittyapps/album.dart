@@ -75,7 +75,6 @@ class PhotosBodyState extends State<PhotosBody> {
         isConnected = true;
       });
     }else {
-      print("no");
       setState(() {
         isConnected = false;
       });
@@ -91,23 +90,12 @@ class PhotosBodyState extends State<PhotosBody> {
         }
       }
       setState(() {
-        print('array: ' + '${_arrayOfPhotos.length}');
         _arrayOfPhotos = photosData;
       });
     }
   }
 
   cachedImageLoader(int i){
-    //try{
-    //  return CachedNetworkImage(
-    //          imageUrl: "${_partlyFilteredArrayOfPhotos[i]["url"]}",
-    //          width: 100.0, height: 100.0, fit: BoxFit.cover,
-    //          placeholder: (context, url) => CircularProgressIndicator(),
-    //          errorWidget: (context, url, error) => Icon(Icons.error),
-    //        );
-    //} catch(e) {
-    //  print("Error: $e");
-    //}
     checkInternet();
 
     if(isConnected){

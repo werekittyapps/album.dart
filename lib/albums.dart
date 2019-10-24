@@ -129,7 +129,6 @@ class AlbumsBodyState extends State<AlbumsBody> {
               ),
               FlatButton(
                 onPressed: () {
-                  print(myController.text);
                   onChangeTitle(index, myController.text);
                   myController.text = "";
                   Navigator.pop(context);
